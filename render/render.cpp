@@ -1,0 +1,99 @@
+#include <fstream>
+#include "../obj_loader/obj_loader.h"
+#include "../shader/shader.h"
+#include "../clip/clip.h"
+
+const int WIDTH = 600;
+const int HEIGHT = 600;
+unsigned char framebuffer[HEIGHT][WIDTH][3] = {};  // initialized to black
+float zBuffer[HEIGHT][WIDTH] = {};
+
+void zBuffInit() {
+  for (int i = 0; i < HEIGHT; ++i)
+    for (int j = 0; j < WIDTH; ++j)
+        zBuffer[i][j] = INFINITY;
+}
+
+Vec3 normalizeToPixel(const Vec3& screenCoord) {
+  float x = (screenCoord.x + 1.0f) * 0.5f * (WIDTH - 1);   // Maps x from [-1, 1] to [0, WIDTH-1]
+  float y = ((screenCoord.y + 1.0f) * 0.5f) * (HEIGHT - 1);  // Maps y from [-1, 1] to [0, HEIGHT-1]
+  return Vec3(x, y, screenCoord.z);
+}
+
+bool insideTriangle(int x, int y, const Vec3& v0, const Vec3& v1, const Vec3& v2) {
+  float px = x + 0.5f;
+  float py = y + 0.5f;
+  float w0 = 0, w1 = 0, w2 = 0, update = 0, z;
+  float area = edgeFunc(v0, v1, v2);
+  if (area != 0) {
+    w0 = edgeFunc(Vec3(px, py, 1.0f), v1, v2)/area;
+    w1 = edgeFunc(Vec3(px, py, 1.0f), v2, v0)/area;
+    w2 = edgeFunc(Vec3(px, py, 1.0f), v0, v1)/area;
+    z = 1 / (w0*(1/v0.z) + w1*(1/v1.z) + w2*(1/v2.z));
+    if (zBuffer[y][x] > z) update = 1;
+  }
+
+  bool write = (w0 >= 0 && w1 >= 0 && w2 >= 0) || (w0 <= 0 && w1 <= 0 && w2 <= 0);
+  if (write) { 
+    if (update == 1) {
+      zBuffer[y][x] = z;
+      return true;
+    } 
+    else return false; 
+  }
+  else return false;
+}
+
+void drawTriangle(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 color) {
+
+  Vec3 v0Pixel = normalizeToPixel(v0);
+  Vec3 v1Pixel = normalizeToPixel(v1);
+  Vec3 v2Pixel = normalizeToPixel(v2);
+
+  int minX = std::max(0, (int)std::floor(std::min(std::min(v0Pixel.x, v1Pixel.x), v2Pixel.x)));
+  int maxX = std::min(WIDTH - 1, (int)std::ceil(std::max(std::max(v0Pixel.x, v1Pixel.x), v2Pixel.x)));
+  int minY = std::max(0, (int)std::floor(std::min(std::min(v0Pixel.y, v1Pixel.y), v2Pixel.y)));
+  int maxY = std::min(HEIGHT - 1, (int)std::ceil(std::max(std::max(v0Pixel.y, v1Pixel.y), v2Pixel.y)));
+
+  for (int y = minY; y <= maxY; ++y) {
+    for (int x = minX; x <= maxX; ++x) {
+      if (insideTriangle(x, y, v0Pixel, v1Pixel, v2Pixel)) {
+        framebuffer[y][x][0] = color.x;  //R
+        framebuffer[y][x][1] = color.y;  //G
+        framebuffer[y][x][2] = color.z;  //B
+      }
+    }
+  }
+}
+
+void savePPM(const std::string& filename) {
+  std::ofstream ofs(filename, std::ios::binary);
+  ofs << "P6\n" << WIDTH << " " << HEIGHT << "\n255\n";
+  for (int y = 0; y < HEIGHT; ++y)
+    for (int x = 0; x < WIDTH; ++x)
+      ofs.write((char*)framebuffer[y][x], 3);
+}
+
+void render() {
+  zBuffInit();
+  for (VBuff& v : VOA) drawTriangle(v.v0, v.v1, v.v2, v.color);
+}
+
+int main(int argc, char* argv[]) {
+  
+  if (argc != 7) { std::cout << "Format: pos dir" << "\n"; return 1; }
+  
+  glm::vec3 pos = {std::stof(argv[1]), std::stof(argv[2]), std::stof(argv[3])};
+  glm::vec3 dir = {std::stof(argv[4]), std::stof(argv[5]), std::stof(argv[6])};
+ 
+  loadModels();
+  generateWorld(models);
+  cameraInputs(Cam(pos, glm::normalize(dir)));
+  clip();
+  render();
+
+  std::string pwd = std::string(std::filesystem::current_path());
+  savePPM(pwd + "/output.ppm");
+
+  return 0;
+}

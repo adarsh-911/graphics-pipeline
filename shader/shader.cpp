@@ -68,9 +68,6 @@ int loadModels() {
 }
 
 glm::vec4 transformVertexWorld (const glm::vec4& vertex, const modelWorld modelParam) {
-  //Cam camera = {
-  //  {0.0f, 0.0f, 0.0f}, //Position
-  //  {0.0f, 0.0f, -1.0f}}; //Direction
 
   glm::mat4 trans = glm::translate(glm::mat4(1.0f), modelParam.position);
   glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), modelParam.angle, modelParam.axis);
@@ -129,13 +126,13 @@ void generateWorld (const std::vector<modelClass> models) {
 
   for (const modelClass& model : models) {
     if (model.name == "wall1") {
-      modelParam.position = {2.0f, -2.0f, -4.0f};
-      modelParam.angle = glm::radians(45.0f);
-      modelParam.axis = {0.0f, 0.0f, 1.0f};
-      float scale = 3.0;
+      modelParam.position = {0.0f, 0.0f, -6.0f};
+      modelParam.angle = glm::radians(10.0f);
+      modelParam.axis = {1.0f, 0.0f, 0.0f};
+      float scale = 8.0;
       Vec3 color = {150, 130, 50};
 
-      //generateModel(model, modelParam, scale, color);
+      generateModel(model, modelParam, scale, color);
     }
     if (model.name == "box") {
       modelParam.position = {0.0f, -2.0f, -3.0f};

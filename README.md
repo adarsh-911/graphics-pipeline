@@ -11,3 +11,7 @@ Example:
 ```bash
 ./out 0.0 -3.0 0.0 0.0 -0.2 -1.0
 ```
+View the rendered output:
+```bash
+feh output.ppm
+```

@@ -151,7 +151,7 @@ void generateWorld (const std::vector<modelClass> models) {
       modelParam.angle = glm::radians(180.0f);
       modelParam.axis = {0.0f, 0.0f, -1.0f};
       float scale = 2.0;
-      Vec3 color = {190, 134, 170};
+      Vec3 color = {190, 133, 170};
 
       generateModel(model, modelParam, scale, color);
     }

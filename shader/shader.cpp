@@ -5,7 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "../obj_loader/obj_loader.h"
-#include "../texture/texture.h"
+#include "../texturing/texture.h"
 #include "shader.h"
 
 std::vector<modelClass> models;

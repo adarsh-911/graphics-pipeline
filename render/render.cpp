@@ -2,7 +2,7 @@
 #include "../obj_loader/obj_loader.h"
 #include "../shader/shader.h"
 #include "../clip/clip.h"
-#include "../texture/texture.h"
+#include "../texturing/texture.h"
 
 const int WIDTH = 600;
 const int HEIGHT = 600;

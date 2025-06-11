@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <glm/glm.hpp>
 #include "../obj_loader/obj_loader.h"
-#include "../texture/texture.h"
+#include "../texturing/texture.h"
 
 namespace fs = std::filesystem;
 

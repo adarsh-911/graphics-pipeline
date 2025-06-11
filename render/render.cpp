@@ -2,6 +2,7 @@
 #include "../obj_loader/obj_loader.h"
 #include "../shader/shader.h"
 #include "../clip/clip.h"
+#include "../texture/texture.h"
 
 const int WIDTH = 600;
 const int HEIGHT = 600;
@@ -20,7 +21,7 @@ Vec3 normalizeToPixel(const Vec3& screenCoord) {
   return Vec3(x, y, screenCoord.z);
 }
 
-bool insideTriangle(int x, int y, const Vec3& v0, const Vec3& v1, const Vec3& v2) {
+pixelBuff insideTriangle(int x, int y, const Vec3& v0, const Vec3& v1, const Vec3& v2) {
   float px = x + 0.5f;
   float py = y + 0.5f;
   float w0 = 0, w1 = 0, w2 = 0, update = 0, z;
@@ -32,19 +33,27 @@ bool insideTriangle(int x, int y, const Vec3& v0, const Vec3& v1, const Vec3& v2
     z = 1 / (w0*(1/v0.z) + w1*(1/v1.z) + w2*(1/v2.z));
     if (zBuffer[y][x] > z) update = 1;
   }
-
+  pixelBuff pixel;
   bool write = (w0 >= 0 && w1 >= 0 && w2 >= 0) || (w0 <= 0 && w1 <= 0 && w2 <= 0);
   if (write) { 
     if (update == 1) {
       zBuffer[y][x] = z;
-      return true;
+      pixel.draw = true;
+      pixel.barycentric = Vec3(w0, w1, w2);
     } 
-    else return false; 
+    else {
+      pixel.draw = false;
+      pixel.barycentric = Vec3(w0, w1, w2);
+    }
   }
-  else return false;
+  else {
+    pixel.draw = false;
+    pixel.barycentric = Vec3(w0, w1, w2);
+  }
+  return pixel;
 }
 
-void drawTriangle(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 color) {
+void drawTriangle(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 color, int modelInd, int triInd) {
 
   Vec3 v0Pixel = normalizeToPixel(v0);
   Vec3 v1Pixel = normalizeToPixel(v1);
@@ -57,10 +66,15 @@ void drawTriangle(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 color) {
 
   for (int y = minY; y <= maxY; ++y) {
     for (int x = minX; x <= maxX; ++x) {
-      if (insideTriangle(x, y, v0Pixel, v1Pixel, v2Pixel)) {
-        framebuffer[y][x][0] = color.x;  //R
-        framebuffer[y][x][1] = color.y;  //G
-        framebuffer[y][x][2] = color.z;  //B
+      pixelBuff currentPixel = insideTriangle(x, y, v0Pixel, v1Pixel, v2Pixel);
+      if (currentPixel.draw) {
+        Color texColor = extractColor(modelInd, triInd, currentPixel.barycentric);
+        //framebuffer[y][x][0] = color.x;  //R
+        //framebuffer[y][x][1] = color.y;  //G
+        //framebuffer[y][x][2] = color.z;  //B
+        framebuffer[y][x][0] = static_cast<float>(texColor.r);  //R
+        framebuffer[y][x][1] = static_cast<float>(texColor.g);  //G
+        framebuffer[y][x][2] = static_cast<float>(texColor.b);  //B
       }
     }
   }
@@ -76,7 +90,7 @@ void savePPM(const std::string& filename) {
 
 void render() {
   zBuffInit();
-  for (VBuff& v : VOA) drawTriangle(v.v0, v.v1, v.v2, v.color);
+  for (VBuff& v : VOA) drawTriangle(v.v0, v.v1, v.v2, v.color, v.modelInd, v.triInd);
 }
 
 int main(int argc, char* argv[]) {

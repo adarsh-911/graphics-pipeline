@@ -14,7 +14,7 @@ bool OBJLoader::load(const std::string& filename) {
   }
 
   std::vector<Vec3> positions;
-  std::vector<Vec2uv> texcoords;
+  std::vector<Vec2uv> texcoords_copy;
   std::vector<Vec3> normals;
 
   std::string line;
@@ -32,6 +32,7 @@ bool OBJLoader::load(const std::string& filename) {
           Vec2uv uv;
           ss >> uv.u >> uv.v;
           texcoords.push_back(uv);
+          texcoords_copy.push_back(uv);
       } else if (prefix == "vn") {
           Vec3 n;
           ss >> n.x >> n.y >> n.z;
@@ -64,7 +65,7 @@ bool OBJLoader::load(const std::string& filename) {
 
               Vertex v;
               if (vi > 0) v.position = positions[vi - 1];
-              if (ti > 0) v.texcoord = texcoords[ti - 1];
+              if (ti > 0) v.texcoord = texcoords_copy[ti - 1];
               if (ni > 0) v.normal = normals[ni - 1];
 
               if (i == 0) {tri.v0 = v; idx.v0 = vi - 1; idx1.v0 = ti - 1;}

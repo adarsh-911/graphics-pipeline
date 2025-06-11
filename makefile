@@ -1,9 +1,9 @@
 # Compiler and flags
 CXX := g++
-CXXFLAGS := -std=c++17 -Iclip -Iobj_loader -Ishader
+CXXFLAGS := -std=c++17 -Iclip -Iobj_loader -Ishader -Itexture
 
 # Source files
-SRC := $(wildcard clip/*.cpp obj_loader/*.cpp shader/*.cpp render/*.cpp)
+SRC := $(wildcard clip/*.cpp obj_loader/*.cpp shader/*.cpp texture/*.cpp render/*.cpp)
 
 OBJ := $(SRC:.cpp=.o)
 

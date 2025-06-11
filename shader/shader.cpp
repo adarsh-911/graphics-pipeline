@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "../obj_loader/obj_loader.h"
+#include "../texture/texture.h"
 #include "shader.h"
 
 std::vector<modelClass> models;
@@ -13,6 +14,7 @@ std::vector<modelClass> modelsCam;
 std::vector<modelTriIndClass> modelTriangleInd;
 std::vector<modelTexClass> modelTexCords;
 std::vector<modelTexIndClass> modelTexCordsInd;
+std::vector<Texture> modelTexColors;
 
 const int WIDTH = 600; //400
 const int HEIGHT = 600; //240
@@ -34,13 +36,35 @@ glm::vec4 normalizeModel(Vec4& v) {
 
 int loadModels() {
 
-  std::string pwd = std::string(fs::current_path());
+  std::string pwd = fs::current_path().string();
   std::string models_path = pwd + "/models";
 
-  for (const auto& entry : fs::recursive_directory_iterator(models_path)) {
-    if (entry.is_regular_file() && entry.path().extension() == ".obj") {
+  for (const auto& dir_entry : fs::directory_iterator(models_path)) {
+    if (!dir_entry.is_directory())
+        continue;
+
+    std::string base_name;
+    fs::path obj_path, tex_path;
+
+    for (const auto& file : fs::directory_iterator(dir_entry.path())) {
+      if (file.is_regular_file()) {
+        fs::path path = file.path();
+        std::string ext = path.extension().string();
+        std::string name = path.stem().string(); // filename without extension
+
+        if (ext == ".obj")
+          obj_path = path;
+
+        if (ext == ".jpg" or ext == ".png")
+          tex_path = path;
+      }
+    }
+
+    if (!obj_path.empty() && !tex_path.empty() &&
+      obj_path.stem() == tex_path.stem()) {
+      
       OBJLoader loader;
-      if (!loader.load(entry.path())) return 1;
+      if (!loader.load(obj_path)) return 1;
       else {
         modelClass m;
         modelTriIndClass mInd;
@@ -48,20 +72,30 @@ int loadModels() {
         modelTexIndClass mTxInd;
 
         for (Vec4& vertex : loader.getVertices()) m.vertices.push_back(normalizeModel(vertex));
+        for (Vec2uv& texVertex : loader.getTexCords()) mTex.texcoords.push_back(texVertex);
 
         mInd.triangleInds = loader.getTriangleInd();
-        mTex.texcoords = loader.getTexCords();
+        //mTex.texcoords = loader.getTexCords();
         mTxInd.texInds = loader.getTexInd();
-        m.name = entry.path().stem().string();
-        mInd.name = entry.path().stem().string();
-        mTex.name = entry.path().stem().string();
-        mTxInd.name = entry.path().stem().string();
+        m.name = obj_path.stem().string();
+        m.ind = models.size();
+        mInd.name = obj_path.stem().string();
+        mTex.name = obj_path.stem().string();
+        mTxInd.name = obj_path.stem().string();
         
         models.push_back(m);
         modelTriangleInd.push_back(mInd);
         modelTexCords.push_back(mTex);
         modelTexCordsInd.push_back(mTxInd);
       }
+      Texture texInst;
+      int w, h;
+      std::vector<Color> colors = loadTexture(tex_path.string().c_str(), w, h);
+      texInst.pixels = colors;
+      texInst.width = w;
+      texInst.height = h;
+      texInst.name = tex_path.stem().string();
+      modelTexColors.push_back(texInst);
     }
   }
   return 0;
@@ -95,7 +129,7 @@ glm::vec4 transformToScreen (glm::vec4 obj_world, Cam camera) {
   return glm::vec4(obj_proj.x, obj_proj.y, obj_proj.z, obj_proj.w);
 }
 
-void generateModel (const modelClass model, const modelWorld modelParam, const float scale, const Vec3 color) {
+void generateModel (const modelClass model, const modelWorld modelParam, const float scale, const Vec3 color, const int ind) {
   modelClass modelInst;
 
   for (const glm::vec4& vertex : model.vertices) {
@@ -105,6 +139,7 @@ void generateModel (const modelClass model, const modelWorld modelParam, const f
   }
   modelInst.name = model.name;
   modelInst.color = color;
+  modelInst.ind = ind;
   modelsWorld.push_back(modelInst);
 }
 
@@ -117,6 +152,7 @@ void cameraInputs (Cam camera) {
     }
     modelInst1.name = modelWorldspace.name;
     modelInst1.color = modelWorldspace.color;
+    modelInst1.ind = modelWorldspace.ind;
     modelsCam.push_back(modelInst1);
   }
 }
@@ -125,23 +161,23 @@ void generateWorld (const std::vector<modelClass> models) {
   modelWorld modelParam;
 
   for (const modelClass& model : models) {
-    if (model.name == "wall1") {
+    if (model.name == "wall") {
       modelParam.position = {0.0f, 0.0f, -6.0f};
-      modelParam.angle = glm::radians(10.0f);
-      modelParam.axis = {1.0f, 0.0f, 0.0f};
-      float scale = 8.0;
+      modelParam.angle = glm::radians(45.0f);
+      modelParam.axis = {0.0f, 0.0f, -1.0f};
+      float scale = 5.0;
       Vec3 color = {150, 130, 50};
 
-      generateModel(model, modelParam, scale, color);
+      //generateModel(model, modelParam, scale, color, model.ind);
     }
     if (model.name == "box") {
       modelParam.position = {0.0f, -2.0f, -3.0f};
-      modelParam.angle = glm::radians(180.0f);
+      modelParam.angle = glm::radians(0.0f);
       modelParam.axis = {0.0f, 0.0f, -1.0f};
-      float scale = 0.5;
+      float scale = 1.0;
       Vec3 color = {50, 134, 200};
 
-      generateModel(model, modelParam, scale, color);
+      generateModel(model, modelParam, scale, color, model.ind);
     }
     if (model.name == "table") {
       modelParam.position = {0.0f, 0.0f, -4.0f};
@@ -150,7 +186,7 @@ void generateWorld (const std::vector<modelClass> models) {
       float scale = 2.0;
       Vec3 color = {190, 133, 170};
 
-      generateModel(model, modelParam, scale, color);
+      //generateModel(model, modelParam, scale, color, model.ind);
     }
     if (model.name == "teapot") {
       modelParam.position = {0.0f, 0.0f, -4.0f};
@@ -159,7 +195,7 @@ void generateWorld (const std::vector<modelClass> models) {
       float scale = 2.0;
       Vec3 color = {200, 124, 70};
 
-      //generateModel(model, modelParam, scale, color);
+      //generateModel(model, modelParam, scale, color, model.ind);
     }
   }
 }

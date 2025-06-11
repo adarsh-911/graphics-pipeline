@@ -73,7 +73,7 @@ std::vector<Vec3> boundFind (Vec3 v0, Vec3 v1, Vec3 v2, bool full) {
   return corners;
 }
 
-void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, const Vec3 color) {
+void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, const Vec3 color, const int modelInd, const int triInd) {
   lineClip clip1 = liang_barskyClip(v0, v1);
   lineClip clip2 = liang_barskyClip(v1, v2);
   lineClip clip3 = liang_barskyClip(v2, v0);
@@ -86,7 +86,7 @@ void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, c
   
   if (check == 0) {
     if (!clip1.out) {
-      VOA.push_back(VBuff(v0_ndc, v1_ndc, v2_ndc, color));
+      VOA.push_back(VBuff(v0_ndc, v1_ndc, v2_ndc, color, modelInd, triInd));
     }
     else {
       float w0 = edgeFunc(Vec3(1.0f, 1.0f, 1.0f), v1_ndc, v2_ndc);
@@ -96,8 +96,8 @@ void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, c
       if (x) {
         std::vector<Vec3> corner = boundFind(v0_ndc, v1_ndc, v2_ndc, true);
         if (corner.size() != 0) {
-          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), Vec3(corner[1].x, corner[1].y, corner[1].z), Vec3(corner[2].x, corner[2].y, corner[2].z), color));
-          VOA.push_back(VBuff(Vec3(corner[3].x, corner[3].y, corner[3].z), Vec3(corner[1].x, corner[1].y, corner[1].z), Vec3(corner[2].x, corner[2].y, corner[2].z), color));
+          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), Vec3(corner[1].x, corner[1].y, corner[1].z), Vec3(corner[2].x, corner[2].y, corner[2].z), color, modelInd, triInd));
+          VOA.push_back(VBuff(Vec3(corner[3].x, corner[3].y, corner[3].z), Vec3(corner[1].x, corner[1].y, corner[1].z), Vec3(corner[2].x, corner[2].y, corner[2].z), color, modelInd, triInd));
         }
       }
     }
@@ -105,45 +105,45 @@ void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, c
   if (check == 1) {
     std::vector<Vec3> corner = boundFind(v0_ndc, v1_ndc, v2_ndc, true);
     if (corner.size() == 1) {
-      if (clip1.status) VOA.push_back(VBuff(clip1.v1, clip1.v2, Vec3(corner[0].x, corner[0].y, corner[0].z), color));
-      if (clip2.status) VOA.push_back(VBuff(clip2.v1, clip2.v2, Vec3(corner[0].x, corner[0].y, corner[0].z), color));
-      if (clip3.status) VOA.push_back(VBuff(clip3.v1, clip3.v2, Vec3(corner[0].x, corner[0].y, corner[0].z), color));
+      if (clip1.status) VOA.push_back(VBuff(clip1.v1, clip1.v2, Vec3(corner[0].x, corner[0].y, corner[0].z), color, modelInd, triInd));
+      if (clip2.status) VOA.push_back(VBuff(clip2.v1, clip2.v2, Vec3(corner[0].x, corner[0].y, corner[0].z), color, modelInd, triInd));
+      if (clip3.status) VOA.push_back(VBuff(clip3.v1, clip3.v2, Vec3(corner[0].x, corner[0].y, corner[0].z), color, modelInd, triInd));
     }
     else if (corner.size() == 2) {
       if (clip1.status) {
         if (corner[0].x == corner[1].x) {
-          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), Vec3(corner[1].x, corner[1].y, corner[1].z), clip1.v1, color));
-          if (corner[0].y == clip1.v2.y) VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip1.v2, clip1.v1, color));
-          else VOA.push_back(VBuff(Vec3(corner[1].x, corner[1].y, corner[1].z), clip1.v1, clip1.v2, color));
+          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), Vec3(corner[1].x, corner[1].y, corner[1].z), clip1.v1, color, modelInd, triInd));
+          if (corner[0].y == clip1.v2.y) VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip1.v2, clip1.v1, color, modelInd, triInd));
+          else VOA.push_back(VBuff(Vec3(corner[1].x, corner[1].y, corner[1].z), clip1.v1, clip1.v2, color, modelInd, triInd));
         }
         if (corner[0].y == corner[1].y) {
-          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), Vec3(corner[1].x, corner[1].y, corner[1].z), clip1.v1, color));
-          if (corner[0].x == clip1.v2.x) VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip1.v2, clip1.v1, color));
-          else VOA.push_back(VBuff(Vec3(corner[1].x, corner[1].y, corner[1].z), clip1.v1, clip1.v2, color));
+          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), Vec3(corner[1].x, corner[1].y, corner[1].z), clip1.v1, color, modelInd, triInd));
+          if (corner[0].x == clip1.v2.x) VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip1.v2, clip1.v1, color, modelInd, triInd));
+          else VOA.push_back(VBuff(Vec3(corner[1].x, corner[1].y, corner[1].z), clip1.v1, clip1.v2, color, modelInd, triInd));
         }
       }
       if (clip2.status) {
         if (corner[0].x == corner[1].x) {
-          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), Vec3(corner[1].x, corner[1].y, corner[1].z), clip2.v1, color));
-          if (corner[0].y == clip2.v2.y) VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip2.v2, clip2.v1, color));
-          else VOA.push_back(VBuff(Vec3(corner[1].x, corner[1].y, corner[1].z), clip2.v1, clip2.v2, color));
+          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), Vec3(corner[1].x, corner[1].y, corner[1].z), clip2.v1, color, modelInd, triInd));
+          if (corner[0].y == clip2.v2.y) VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip2.v2, clip2.v1, color, modelInd, triInd));
+          else VOA.push_back(VBuff(Vec3(corner[1].x, corner[1].y, corner[1].z), clip2.v1, clip2.v2, color, modelInd, triInd));
         }
         if (corner[0].y == corner[1].y) {
-          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), Vec3(corner[1].x, corner[1].y, corner[1].z), clip2.v1, color));
-          if (corner[0].x == clip2.v2.x) VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip2.v2, clip2.v1, color));
-          else VOA.push_back(VBuff(Vec3(corner[1].x, corner[1].y, corner[1].z), clip2.v1, clip2.v2, color));
+          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), Vec3(corner[1].x, corner[1].y, corner[1].z), clip2.v1, color, modelInd, triInd));
+          if (corner[0].x == clip2.v2.x) VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip2.v2, clip2.v1, color, modelInd, triInd));
+          else VOA.push_back(VBuff(Vec3(corner[1].x, corner[1].y, corner[1].z), clip2.v1, clip2.v2, color, modelInd, triInd));
         }
       }
       if (clip3.status) {
         if (corner[0].x == corner[1].x) {
-          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), Vec3(corner[1].x, corner[1].y, corner[1].z), clip3.v1, color));
-          if (corner[0].y == clip3.v2.y) VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip3.v2, clip3.v1, color));
-          else VOA.push_back(VBuff(Vec3(corner[1].x, corner[1].y, corner[1].z), clip3.v1, clip3.v2, color));
+          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), Vec3(corner[1].x, corner[1].y, corner[1].z), clip3.v1, color, modelInd, triInd));
+          if (corner[0].y == clip3.v2.y) VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip3.v2, clip3.v1, color, modelInd, triInd));
+          else VOA.push_back(VBuff(Vec3(corner[1].x, corner[1].y, corner[1].z), clip3.v1, clip3.v2, color, modelInd, triInd));
         }
         if (corner[0].y == corner[1].y) {
-          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), Vec3(corner[1].x, corner[1].y, corner[1].z), clip3.v1, color));
-          if (corner[0].x == clip3.v2.x) VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip3.v2, clip3.v1, color));
-          else VOA.push_back(VBuff(Vec3(corner[1].x, corner[1].y, corner[1].z), clip3.v1, clip3.v2, color));
+          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), Vec3(corner[1].x, corner[1].y, corner[1].z), clip3.v1, color, modelInd, triInd));
+          if (corner[0].x == clip3.v2.x) VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip3.v2, clip3.v1, color, modelInd, triInd));
+          else VOA.push_back(VBuff(Vec3(corner[1].x, corner[1].y, corner[1].z), clip3.v1, clip3.v2, color, modelInd, triInd));
         }
       }
     }
@@ -152,46 +152,46 @@ void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, c
     if (!clip1.status) {
       if (clip1.out) {
         if ((clip2.v1.x == clip3.v2.x) || (clip2.v1.y == clip3.v2.y))
-          VOA.push_back(VBuff(v2_ndc, clip2.v1, clip3.v2, color));
+          VOA.push_back(VBuff(v2_ndc, clip2.v1, clip3.v2, color, modelInd, triInd));
         else {
-          VOA.push_back(VBuff(v2_ndc, clip2.v1, clip3.v2, color));
+          VOA.push_back(VBuff(v2_ndc, clip2.v1, clip3.v2, color, modelInd, triInd));
           std::vector<Vec3> corner = boundFind(v0_ndc, v1_ndc, v2_ndc, false);
-          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip2.v1, clip3.v2, color));
+          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip2.v1, clip3.v2, color, modelInd, triInd));
         }
       }
       else {
-        VOA.push_back(VBuff(v0_ndc, v1_ndc, clip3.v1, color));
-        VOA.push_back(VBuff(v1_ndc, clip3.v1, clip2.v2, color));
+        VOA.push_back(VBuff(v0_ndc, v1_ndc, clip3.v1, color, modelInd, triInd));
+        VOA.push_back(VBuff(v1_ndc, clip3.v1, clip2.v2, color, modelInd, triInd));
       }
     }
     if (!clip2.status) {
       if (clip2.out) {
         if ((clip1.v2.x == clip3.v1.x) || (clip1.v2.y == clip3.v1.y))
-          VOA.push_back(VBuff(v0_ndc, clip1.v2, clip3.v1, color));
+          VOA.push_back(VBuff(v0_ndc, clip1.v2, clip3.v1, color, modelInd, triInd));
         else {
-          VOA.push_back(VBuff(v0_ndc, clip1.v2, clip3.v1, color));
+          VOA.push_back(VBuff(v0_ndc, clip1.v2, clip3.v1, color, modelInd, triInd));
           std::vector<Vec3> corner = boundFind(v0_ndc, v1_ndc, v2_ndc, false);
-          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip1.v2, clip3.v1, color));
+          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip1.v2, clip3.v1, color, modelInd, triInd));
         }
       }
       else {
-        VOA.push_back(VBuff(v1_ndc, v2_ndc, clip1.v1, color));
-        VOA.push_back(VBuff(v2_ndc, clip1.v1, clip3.v2, color));
+        VOA.push_back(VBuff(v1_ndc, v2_ndc, clip1.v1, color, modelInd, triInd));
+        VOA.push_back(VBuff(v2_ndc, clip1.v1, clip3.v2, color, modelInd, triInd));
       }
     }
     if (!clip3.status) {
       if (clip3.out) {
         if ((clip2.v2.x == clip1.v1.x) || (clip2.v2.y == clip1.v1.y))
-          VOA.push_back(VBuff(v1_ndc, clip2.v2, clip1.v1, color));
+          VOA.push_back(VBuff(v1_ndc, clip2.v2, clip1.v1, color, modelInd, triInd));
         else {
-          VOA.push_back(VBuff(v1_ndc, clip2.v2, clip1.v1, color));
+          VOA.push_back(VBuff(v1_ndc, clip2.v2, clip1.v1, color, modelInd, triInd));
           std::vector<Vec3> corner = boundFind(v0_ndc, v1_ndc, v2_ndc, false);
-          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip2.v2, clip1.v1, color));
+          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip2.v2, clip1.v1, color, modelInd, triInd));
         }
       }
       else {
-        VOA.push_back(VBuff(v0_ndc, v2_ndc, clip1.v2, color));
-        VOA.push_back(VBuff(v2_ndc, clip1.v2, clip2.v1, color));
+        VOA.push_back(VBuff(v0_ndc, v2_ndc, clip1.v2, color, modelInd, triInd));
+        VOA.push_back(VBuff(v2_ndc, clip1.v2, clip2.v1, color, modelInd, triInd));
       }
     }
   }
@@ -200,19 +200,19 @@ void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, c
     bool v1_in = (fabsf(v1_ndc.x) <= 1 && fabsf(v1_ndc.y) <= 1);
     bool v2_in = (fabsf(v2_ndc.x) <= 1 && fabsf(v2_ndc.y) <= 1);
     if (v0_in) {
-      VOA.push_back(VBuff(v0_ndc, clip2.v1, clip2.v2, color));
-      VOA.push_back(VBuff(v0_ndc, clip1.v2, clip2.v1, color));
-      VOA.push_back(VBuff(v0_ndc, clip3.v1, clip2.v2, color));
+      VOA.push_back(VBuff(v0_ndc, clip2.v1, clip2.v2, color, modelInd, triInd));
+      VOA.push_back(VBuff(v0_ndc, clip1.v2, clip2.v1, color, modelInd, triInd));
+      VOA.push_back(VBuff(v0_ndc, clip3.v1, clip2.v2, color, modelInd, triInd));
     }
     if (v1_in) {
-      VOA.push_back(VBuff(v1_ndc, clip3.v1, clip3.v2, color));
-      VOA.push_back(VBuff(v1_ndc, clip1.v1, clip3.v2, color));
-      VOA.push_back(VBuff(v1_ndc, clip2.v2, clip3.v1, color));
+      VOA.push_back(VBuff(v1_ndc, clip3.v1, clip3.v2, color, modelInd, triInd));
+      VOA.push_back(VBuff(v1_ndc, clip1.v1, clip3.v2, color, modelInd, triInd));
+      VOA.push_back(VBuff(v1_ndc, clip2.v2, clip3.v1, color, modelInd, triInd));
     }
     if (v2_in) {
-      VOA.push_back(VBuff(v2_ndc, clip1.v1, clip1.v2, color));
-      VOA.push_back(VBuff(v2_ndc, clip3.v2, clip1.v1, color));
-      VOA.push_back(VBuff(v2_ndc, clip2.v1, clip1.v2, color));
+      VOA.push_back(VBuff(v2_ndc, clip1.v1, clip1.v2, color, modelInd, triInd));
+      VOA.push_back(VBuff(v2_ndc, clip3.v2, clip1.v1, color, modelInd, triInd));
+      VOA.push_back(VBuff(v2_ndc, clip2.v1, clip1.v2, color, modelInd, triInd));
     }
   }
 }
@@ -221,11 +221,13 @@ void clip () {
   for (const modelClass& transModel : modelsCam) {
     for (const modelTriIndClass& triIndModel : modelTriangleInd) {
       if (triIndModel.name == transModel.name) {
+        int triangleInd = 0;
         for (const Ind& triInd : triIndModel.triangleInds) {
           glm::vec4 ver1 = transModel.vertices[triInd.v0];
           glm::vec4 ver2 = transModel.vertices[triInd.v1];
           glm::vec4 ver3 = transModel.vertices[triInd.v2];
-          clipTriangle(ver1, ver2, ver3, transModel.color);
+          clipTriangle(ver1, ver2, ver3, transModel.color, transModel.ind, triangleInd);
+          triangleInd++;
         }
       }
     }

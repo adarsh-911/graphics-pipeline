@@ -14,18 +14,18 @@ struct modelClass {
   int ind;
 };
 
-struct modelTriIndClass {
-  std::vector<Ind> triangleInds;
-  std::string name;
-};
-
 struct modelTexClass {
   std::vector<Vec2uv> texcoords;
   std::string name;
 };
 
-struct modelTexIndClass {
-  std::vector<Ind> texInds;
+struct modelNormalClass {
+  std::vector<Vec3> normals;
+  std::string name;
+};
+
+struct modelIdx {
+  std::vector<Ind> idx;
   std::string name;
 };
 
@@ -58,15 +58,23 @@ struct Plane {
   glm::vec3 norm;
 };
 
+struct Object {
+  bool object, light;
+  Object(bool _object = false, bool _light = false) : object(_object), light(_light) {}
+};
+
 int loadModels();
-int loadModelsTex();
 void generateWorld (const std::vector<modelClass> models);
 void cameraInputs (Cam camera);
 
 extern std::vector<modelClass> models;
 extern std::vector<modelClass> modelsWorld;
 extern std::vector<modelClass> modelsCam;
-extern std::vector<modelTriIndClass> modelTriangleInd;
+extern std::vector<modelIdx> modelTriangleInd;
 extern std::vector<modelTexClass> modelTexCords;
-extern std::vector<modelTexIndClass> modelTexCordsInd;
+extern std::vector<modelIdx> modelTexCordsInd;
 extern std::vector<Texture> modelTexColors;
+extern std::vector<modelNormalClass> modelNormals;
+extern std::vector<modelIdx> modelNormInd;
+extern std::vector<glm::vec3> lightSources;
+extern Cam cameraParam;

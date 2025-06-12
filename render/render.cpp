@@ -3,6 +3,7 @@
 #include "../shader/shader.h"
 #include "../clip/clip.h"
 #include "../texturing/texture.h"
+#include "../lightning/lightning.h"
 
 const int WIDTH = 600;
 const int HEIGHT = 600;
@@ -69,12 +70,14 @@ void drawTriangle(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 color, int modelInd, int triIn
       pixelBuff currentPixel = insideTriangle(x, y, v0Pixel, v1Pixel, v2Pixel);
       if (currentPixel.draw) {
         Color texColor = extractColor(modelInd, triInd, currentPixel.barycentric);
+        glm::vec3 lightAmount = glm::vec3(1.0f, 1.0f, 1.0f);
+        lightAmount = lightAmp(modelInd, triInd, currentPixel.barycentric);
         //framebuffer[y][x][0] = color.x;  //R
         //framebuffer[y][x][1] = color.y;  //G
         //framebuffer[y][x][2] = color.z;  //B
-        framebuffer[y][x][0] = static_cast<float>(texColor.r);  //R
-        framebuffer[y][x][1] = static_cast<float>(texColor.g);  //G
-        framebuffer[y][x][2] = static_cast<float>(texColor.b);  //B
+        framebuffer[y][x][0] = static_cast<float>(texColor.r)*lightAmount.x;  //R
+        framebuffer[y][x][1] = static_cast<float>(texColor.g)*lightAmount.y;  //G
+        framebuffer[y][x][2] = static_cast<float>(texColor.b)*lightAmount.z;  //B
       }
     }
   }
@@ -105,7 +108,7 @@ int main(int argc, char* argv[]) {
   cameraInputs(Cam(pos, glm::normalize(dir)));
   clip();
   render();
-
+  
   std::string pwd = std::string(std::filesystem::current_path());
   savePPM(pwd + "/output.ppm");
 

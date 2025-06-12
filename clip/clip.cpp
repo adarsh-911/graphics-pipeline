@@ -219,10 +219,10 @@ void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, c
 
 void clip () {
   for (const modelClass& transModel : modelsCam) {
-    for (const modelTriIndClass& triIndModel : modelTriangleInd) {
+    for (const modelIdx& triIndModel : modelTriangleInd) {
       if (triIndModel.name == transModel.name) {
         int triangleInd = 0;
-        for (const Ind& triInd : triIndModel.triangleInds) {
+        for (const Ind& triInd : triIndModel.idx) {
           glm::vec4 ver1 = transModel.vertices[triInd.v0];
           glm::vec4 ver2 = transModel.vertices[triInd.v1];
           glm::vec4 ver3 = transModel.vertices[triInd.v2];

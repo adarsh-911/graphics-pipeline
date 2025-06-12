@@ -8,6 +8,9 @@ struct Vec3 {
   float x, y, z;
   Vec3() : x(0), y(0), z(0) {}
   Vec3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+
+  Vec3 operator*(float scalar) const {return Vec3(x * scalar, y * scalar, z * scalar);}
+  Vec3 operator+(const Vec3& other) const {return Vec3(x + other.x, y + other.y, z + other.z);}
 };
 
 struct Vec2uv { 
@@ -46,6 +49,8 @@ class OBJLoader {
     std::vector<Ind>& getTriangleInd();
     std::vector<Vec2uv>& getTexCords();
     std::vector<Ind>& getTexInd();
+    std::vector<Vec3>& getNormals();
+    std::vector<Ind>& getNormalInd();
 
   private:
     std::vector<Triangle> triangles;
@@ -53,4 +58,6 @@ class OBJLoader {
     std::vector<Vec4> vertices;
     std::vector<Vec2uv> texcoords;
     std::vector<Ind> texInd;
+    std::vector<Vec3> objNormals;
+    std::vector<Ind> normalInd;
 };

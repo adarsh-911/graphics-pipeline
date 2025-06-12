@@ -11,10 +11,14 @@
 std::vector<modelClass> models;
 std::vector<modelClass> modelsWorld;
 std::vector<modelClass> modelsCam;
-std::vector<modelTriIndClass> modelTriangleInd;
+std::vector<modelIdx> modelTriangleInd;
 std::vector<modelTexClass> modelTexCords;
-std::vector<modelTexIndClass> modelTexCordsInd;
+std::vector<modelIdx> modelTexCordsInd;
+std::vector<modelNormalClass> modelNormals;
+std::vector<modelIdx> modelNormInd;
 std::vector<Texture> modelTexColors;
+std::vector<glm::vec3> lightSources;
+Cam cameraParam(glm::vec3(0.0f), glm::vec3(0.0f));
 
 const int WIDTH = 600; //400
 const int HEIGHT = 600; //240
@@ -67,26 +71,36 @@ int loadModels() {
       if (!loader.load(obj_path)) return 1;
       else {
         modelClass m;
-        modelTriIndClass mInd;
+        modelIdx mInd;
         modelTexClass mTex;
-        modelTexIndClass mTxInd;
+        modelIdx mTxInd;
+        modelNormalClass mNorm;
+        modelIdx mNormIdx;
 
         for (Vec4& vertex : loader.getVertices()) m.vertices.push_back(normalizeModel(vertex));
         for (Vec2uv& texVertex : loader.getTexCords()) mTex.texcoords.push_back(texVertex);
+        for (Vec3& normalVertex : loader.getNormals()) mNorm.normals.push_back(normalVertex); 
 
-        mInd.triangleInds = loader.getTriangleInd();
+        mInd.idx = loader.getTriangleInd();
         //mTex.texcoords = loader.getTexCords();
-        mTxInd.texInds = loader.getTexInd();
+        mTxInd.idx = loader.getTexInd();
+        mNormIdx.idx = loader.getNormalInd();
         m.name = obj_path.stem().string();
         m.ind = models.size();
-        mInd.name = obj_path.stem().string();
-        mTex.name = obj_path.stem().string();
-        mTxInd.name = obj_path.stem().string();
+
+        std::string modelName = obj_path.stem().string();
+        mInd.name = modelName;
+        mTex.name = modelName;
+        mTxInd.name = modelName;
+        mNorm.name = modelName;
+        mNormIdx.name = modelName;
         
         models.push_back(m);
         modelTriangleInd.push_back(mInd);
         modelTexCords.push_back(mTex);
         modelTexCordsInd.push_back(mTxInd);
+        modelNormals.push_back(mNorm);
+        modelNormInd.push_back(mNormIdx);
       }
       Texture texInst;
       int w, h;
@@ -129,21 +143,30 @@ glm::vec4 transformToScreen (glm::vec4 obj_world, Cam camera) {
   return glm::vec4(obj_proj.x, obj_proj.y, obj_proj.z, obj_proj.w);
 }
 
-void generateModel (const modelClass model, const modelWorld modelParam, const float scale, const Vec3 color, const int ind) {
+void generateModel (const Object type, const modelClass model, const modelWorld modelParam, const float scale, const Vec3 color, const int ind) {
   modelClass modelInst;
+  glm::vec3 sum(0.0f);
 
   for (const glm::vec4& vertex : model.vertices) {
     glm::vec4 scaled_vertex = glm::vec4(vertex.x*scale, vertex.y*scale, vertex.z*scale, 1.0f);
     glm::vec4 transVertx = transformVertexWorld(scaled_vertex, modelParam);
+    //if (type.light) sum += glm::vec3(transVertx.x/transVertx.w, transVertx.y/transVertx.w, transVertx.z/transVertx.w);
+    if (type.light) sum += glm::vec3(transVertx.x, transVertx.y, transVertx.z);
     modelInst.vertices.push_back(transVertx);
+    //std::cout << transVertx.x << transVertx.y << transVertx.z << "\n";
   }
   modelInst.name = model.name;
   modelInst.color = color;
   modelInst.ind = ind;
   modelsWorld.push_back(modelInst);
+
+  if (type.light) lightSources.push_back(sum/static_cast<float>(modelInst.vertices.size()));
+  //std::cout << sum.x/static_cast<float>(modelInst.vertices.size()) << sum.y/static_cast<float>(modelInst.vertices.size()) << sum.z/static_cast<float>(modelInst.vertices.size()) << "\n";
+  //std::cout << "\n\n";
 }
 
 void cameraInputs (Cam camera) {
+  cameraParam = camera;
   for (const modelClass& modelWorldspace : modelsWorld) {
     modelClass modelInst1;
     for (const glm::vec4& vertex : modelWorldspace.vertices) {
@@ -161,41 +184,56 @@ void generateWorld (const std::vector<modelClass> models) {
   modelWorld modelParam;
 
   for (const modelClass& model : models) {
+    Object type;
+    if (model.name == "light") {
+      type.light = true;
+      modelParam.position = {-4.5f, -7.0f, -6.0f};
+      modelParam.angle = glm::radians(0.0f);
+      modelParam.axis = {0.0f, 0.0f, -1.0f};
+      float scale = 0.25;
+      Vec3 color = {150, 130, 50};
+
+      generateModel(type, model, modelParam, scale, color, model.ind);
+    }
     if (model.name == "wall") {
+      type.object == true;
       modelParam.position = {0.0f, 0.0f, -6.0f};
       modelParam.angle = glm::radians(45.0f);
       modelParam.axis = {0.0f, 0.0f, -1.0f};
       float scale = 5.0;
       Vec3 color = {150, 130, 50};
 
-      //generateModel(model, modelParam, scale, color, model.ind);
+      //generateModel(type, model, modelParam, scale, color, model.ind);
     }
     if (model.name == "box") {
+      type.object == true;
       modelParam.position = {0.0f, -2.0f, -3.0f};
       modelParam.angle = glm::radians(0.0f);
       modelParam.axis = {0.0f, 0.0f, -1.0f};
       float scale = 1.0;
       Vec3 color = {50, 134, 200};
 
-      generateModel(model, modelParam, scale, color, model.ind);
+      //generateModel(type, model, modelParam, scale, color, model.ind);
     }
     if (model.name == "table") {
+      type.object == true;
       modelParam.position = {0.0f, 0.0f, -4.0f};
       modelParam.angle = glm::radians(180.0f);
       modelParam.axis = {0.0f, 0.0f, -1.0f};
       float scale = 2.0;
       Vec3 color = {190, 133, 170};
 
-      //generateModel(model, modelParam, scale, color, model.ind);
+      generateModel(type, model, modelParam, scale, color, model.ind);
     }
     if (model.name == "teapot") {
+      type.object == true;
       modelParam.position = {0.0f, 0.0f, -4.0f};
       modelParam.angle = glm::radians(180.0f);
       modelParam.axis = {0.0f, 0.0f, -1.0f};
       float scale = 2.0;
       Vec3 color = {200, 124, 70};
 
-      //generateModel(model, modelParam, scale, color, model.ind);
+      //generateModel(type, model, modelParam, scale, color, model.ind);
     }
   }
 }

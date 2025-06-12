@@ -36,11 +36,11 @@ bool OBJLoader::load(const std::string& filename) {
       } else if (prefix == "vn") {
           Vec3 n;
           ss >> n.x >> n.y >> n.z;
+          objNormals.push_back(n);
           normals.push_back(n);
       } else if (prefix == "f") {
           Triangle tri;
-          Ind idx;
-          Ind idx1;
+          Ind idx, idx1, idx2;
           for (int i = 0; i < 3; ++i) {
               std::string vert;
               ss >> vert;
@@ -68,13 +68,14 @@ bool OBJLoader::load(const std::string& filename) {
               if (ti > 0) v.texcoord = texcoords_copy[ti - 1];
               if (ni > 0) v.normal = normals[ni - 1];
 
-              if (i == 0) {tri.v0 = v; idx.v0 = vi - 1; idx1.v0 = ti - 1;}
-              if (i == 1) {tri.v1 = v; idx.v1 = vi - 1; idx1.v1 = ti - 1;}
-              if (i == 2) {tri.v2 = v; idx.v2 = vi - 1; idx1.v2 = ti - 1;}
+              if (i == 0) {tri.v0 = v; idx.v0 = vi - 1; idx1.v0 = ti - 1; idx2.v0 = ni - 1;}
+              if (i == 1) {tri.v1 = v; idx.v1 = vi - 1; idx1.v1 = ti - 1; idx2.v1 = ni - 1;}
+              if (i == 2) {tri.v2 = v; idx.v2 = vi - 1; idx1.v2 = ti - 1; idx2.v2 = ni - 1;}
           }
           triangles.push_back(tri);
           triangleInd.push_back(idx);
           texInd.push_back(idx1);
+          normalInd.push_back(idx2);
       }
   }
 
@@ -99,4 +100,12 @@ std::vector<Vec4>& OBJLoader::getVertices() {
 
 std::vector<Vec2uv>& OBJLoader::getTexCords() {
   return texcoords;
+}
+
+std::vector<Vec3>& OBJLoader::getNormals() {
+  return objNormals;
+}
+
+std::vector<Ind>& OBJLoader::getNormalInd() {
+  return normalInd;
 }

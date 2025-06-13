@@ -5,6 +5,9 @@
 #include "../texturing/texture.h"
 #include "../lightning/lightning.h"
 
+bool TEXTURE = true;
+bool LIGHTNING = true;
+
 const int WIDTH = 600;
 const int HEIGHT = 600;
 unsigned char framebuffer[HEIGHT][WIDTH][3] = {};  // initialized to black
@@ -69,15 +72,38 @@ void drawTriangle(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 color, int modelInd, int triIn
     for (int x = minX; x <= maxX; ++x) {
       pixelBuff currentPixel = insideTriangle(x, y, v0Pixel, v1Pixel, v2Pixel);
       if (currentPixel.draw) {
-        Color texColor = extractColor(modelInd, triInd, currentPixel.barycentric);
-        glm::vec3 lightAmount = glm::vec3(1.0f, 1.0f, 1.0f);
-        lightAmount = lightAmp(modelInd, triInd, currentPixel.barycentric);
-        //framebuffer[y][x][0] = color.x;  //R
-        //framebuffer[y][x][1] = color.y;  //G
-        //framebuffer[y][x][2] = color.z;  //B
-        framebuffer[y][x][0] = static_cast<float>(texColor.r)*lightAmount.x;  //R
-        framebuffer[y][x][1] = static_cast<float>(texColor.g)*lightAmount.y;  //G
-        framebuffer[y][x][2] = static_cast<float>(texColor.b)*lightAmount.z;  //B
+        
+        if (TEXTURE and !LIGHTNING) {
+          Color texColor = extractColor(modelInd, triInd, currentPixel.barycentric);
+          framebuffer[y][x][0] = std::min(static_cast<float>(texColor.r), 255.0f);
+          framebuffer[y][x][1] = std::min(static_cast<float>(texColor.g), 255.0f);
+          framebuffer[y][x][2] = std::min(static_cast<float>(texColor.b), 255.0f);
+        }
+        
+        if (TEXTURE and LIGHTNING) {
+          Color texColor = extractColor(modelInd, triInd, currentPixel.barycentric);
+          glm::vec3 lightAmount = lightAmp(modelInd, triInd, currentPixel.barycentric);
+          framebuffer[y][x][0] = std::min(static_cast<float>(texColor.r)*lightAmount.x, 255.0f);
+          framebuffer[y][x][1] = std::min(static_cast<float>(texColor.g)*lightAmount.y, 255.0f);
+          framebuffer[y][x][2] = std::min(static_cast<float>(texColor.b)*lightAmount.z, 255.0f);
+          //framebuffer[y][x][0] = lightAmount.x;
+          //framebuffer[y][x][1] = lightAmount.y;
+          //framebuffer[y][x][2] = lightAmount.z;
+        }
+
+        if (!TEXTURE and LIGHTNING) {
+          glm::vec3 lightAmount = lightAmp(modelInd, triInd, currentPixel.barycentric);
+          framebuffer[y][x][0] = std::min(color.x*lightAmount.x, 255.0f);  //R
+          framebuffer[y][x][1] = std::min(color.y*lightAmount.y, 255.0f);  //G
+          framebuffer[y][x][2] = std::min(color.z*lightAmount.z, 255.0f);  //B
+        }
+
+        if (!TEXTURE and !LIGHTNING) {
+          framebuffer[y][x][0] = color.x;  //R
+          framebuffer[y][x][1] = color.y;  //G
+          framebuffer[y][x][2] = color.z;  //B
+        }
+        
       }
     }
   }

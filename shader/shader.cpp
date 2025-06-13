@@ -28,6 +28,11 @@ const float FAR = 100.0f;
 
 const float fovy = glm::radians(110.0f);
 
+template <typename T>
+float signum(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
 glm::vec4 normalizeModel(Vec4& v) {
   float maxVal = std::max({ std::abs(v.x), std::abs(v.y), std::abs(v.z) });
   if (maxVal != 0.0f) {
@@ -66,7 +71,7 @@ int loadModels() {
 
     if (!obj_path.empty() && !tex_path.empty() &&
       obj_path.stem() == tex_path.stem()) {
-      
+
       OBJLoader loader;
       if (!loader.load(obj_path)) return 1;
       else {
@@ -78,6 +83,7 @@ int loadModels() {
         modelIdx mNormIdx;
 
         for (Vec4& vertex : loader.getVertices()) m.vertices.push_back(normalizeModel(vertex));
+        for (Vec4& vertex : loader.getVertices()) m.vertices.push_back(glm::vec4(vertex.x, vertex.y, vertex.z, vertex.w));
         for (Vec2uv& texVertex : loader.getTexCords()) mTex.texcoords.push_back(texVertex);
         for (Vec3& normalVertex : loader.getNormals()) mNorm.normals.push_back(normalVertex); 
 
@@ -115,11 +121,18 @@ int loadModels() {
   return 0;
 }
 
-glm::vec4 transformVertexWorld (const glm::vec4& vertex, const modelWorld modelParam) {
+glm::vec4 transformVertexWorld (const glm::vec4& vertex, const modelWorld modelParam, const int ind) {
 
   glm::mat4 trans = glm::translate(glm::mat4(1.0f), modelParam.position);
   glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), modelParam.angle, modelParam.axis);
   glm::vec4 obj_world = (trans * rotate) * vertex;
+
+  int i = 0;
+  for (Vec3& normal : modelNormals[ind].normals) {
+    glm::vec4 normUpdate = rotate*glm::vec4(normal.x, normal.y, normal.z, 1.0f);
+    (modelNormals[ind].normals)[i] = Vec3(normUpdate.x, normUpdate.y, normUpdate.z);
+    i++;
+  }
 
   return obj_world;
 }
@@ -132,13 +145,13 @@ glm::vec4 transformToScreen (glm::vec4 obj_world, Cam camera) {
   far.org = glm::vec3(glm::translate(glm::mat4(1.0f), camera.dir * FAR) * glm::vec4(camera.pos, 1.0f));
   far.norm = camera.dir;
 
-  glm::mat4 trans = glm::translate(glm::mat4(1.0f), glm::vec3(camera.pos.x, -camera.pos.y, -camera.pos.z));  
-  glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f), -float(acos(-camera.dir.z/sqrt(camera.dir.z*camera.dir.z + camera.dir.x*camera.dir.x))), {0.0f, -1.0f, 0.0f});
-  glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f), -float(acos(-camera.dir.z/sqrt(camera.dir.z*camera.dir.z + camera.dir.y*camera.dir.y))), {1.0f, 0.0f, 0.0f});
+  glm::mat4 trans = glm::translate(glm::mat4(1.0f), glm::vec3(-camera.pos.x, -camera.pos.y, -camera.pos.z));  
+  glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f), signum(camera.dir.x)*float(acos(-camera.dir.z/sqrt(camera.dir.z*camera.dir.z + camera.dir.x*camera.dir.x))), {0.0f, -1.0f, 0.0f});
+  glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f), signum(camera.dir.y)*float(acos(-camera.dir.z/sqrt(camera.dir.z*camera.dir.z + camera.dir.y*camera.dir.y))), {1.0f, 0.0f, 0.0f});
   glm::vec4 obj_cam = (trans * rotateY * rotateX) * obj_world;
 
   glm::mat4 projM = glm::perspective(fovy, (float)WIDTH/HEIGHT, NEAR, FAR);
-  glm::vec4 obj_proj = projM * obj_cam;
+  glm::vec4 obj_proj = projM * obj_cam; 
 
   return glm::vec4(obj_proj.x, obj_proj.y, obj_proj.z, obj_proj.w);
 }
@@ -149,11 +162,9 @@ void generateModel (const Object type, const modelClass model, const modelWorld 
 
   for (const glm::vec4& vertex : model.vertices) {
     glm::vec4 scaled_vertex = glm::vec4(vertex.x*scale, vertex.y*scale, vertex.z*scale, 1.0f);
-    glm::vec4 transVertx = transformVertexWorld(scaled_vertex, modelParam);
-    //if (type.light) sum += glm::vec3(transVertx.x/transVertx.w, transVertx.y/transVertx.w, transVertx.z/transVertx.w);
+    glm::vec4 transVertx = transformVertexWorld(scaled_vertex, modelParam, ind);
     if (type.light) sum += glm::vec3(transVertx.x, transVertx.y, transVertx.z);
     modelInst.vertices.push_back(transVertx);
-    //std::cout << transVertx.x << transVertx.y << transVertx.z << "\n";
   }
   modelInst.name = model.name;
   modelInst.color = color;
@@ -161,8 +172,6 @@ void generateModel (const Object type, const modelClass model, const modelWorld 
   modelsWorld.push_back(modelInst);
 
   if (type.light) lightSources.push_back(sum/static_cast<float>(modelInst.vertices.size()));
-  //std::cout << sum.x/static_cast<float>(modelInst.vertices.size()) << sum.y/static_cast<float>(modelInst.vertices.size()) << sum.z/static_cast<float>(modelInst.vertices.size()) << "\n";
-  //std::cout << "\n\n";
 }
 
 void cameraInputs (Cam camera) {
@@ -187,16 +196,16 @@ void generateWorld (const std::vector<modelClass> models) {
     Object type;
     if (model.name == "light") {
       type.light = true;
-      modelParam.position = {-4.5f, -7.0f, -6.0f};
+      modelParam.position = {0.0f, -5.0f, -3.5f};
       modelParam.angle = glm::radians(0.0f);
       modelParam.axis = {0.0f, 0.0f, -1.0f};
       float scale = 0.25;
-      Vec3 color = {150, 130, 50};
+      Vec3 color = {255, 255, 255};
 
       generateModel(type, model, modelParam, scale, color, model.ind);
     }
     if (model.name == "wall") {
-      type.object == true;
+      type.object = true;
       modelParam.position = {0.0f, 0.0f, -6.0f};
       modelParam.angle = glm::radians(45.0f);
       modelParam.axis = {0.0f, 0.0f, -1.0f};
@@ -206,34 +215,34 @@ void generateWorld (const std::vector<modelClass> models) {
       //generateModel(type, model, modelParam, scale, color, model.ind);
     }
     if (model.name == "box") {
-      type.object == true;
+      type.object = true;
       modelParam.position = {0.0f, -2.0f, -3.0f};
-      modelParam.angle = glm::radians(0.0f);
-      modelParam.axis = {0.0f, 0.0f, -1.0f};
-      float scale = 1.0;
+      modelParam.angle = glm::radians(30.0f);
+      modelParam.axis = {1.0f, 0.0f, 0.0f};
+      float scale = 1.5;
       Vec3 color = {50, 134, 200};
 
       //generateModel(type, model, modelParam, scale, color, model.ind);
     }
-    if (model.name == "table") {
-      type.object == true;
+    if (model.name == "table2") {
+      type.object = true;
       modelParam.position = {0.0f, 0.0f, -4.0f};
-      modelParam.angle = glm::radians(180.0f);
-      modelParam.axis = {0.0f, 0.0f, -1.0f};
+      modelParam.angle = glm::radians(90.0f);
+      modelParam.axis = {1.0f, 0.0f, 0.0f};
       float scale = 2.0;
       Vec3 color = {190, 133, 170};
 
       generateModel(type, model, modelParam, scale, color, model.ind);
     }
-    if (model.name == "teapot") {
-      type.object == true;
-      modelParam.position = {0.0f, 0.0f, -4.0f};
+    if (model.name == "pyobj") {
+      type.object = true;
+      modelParam.position = {0.0f, -2.0f, -4.0f};
       modelParam.angle = glm::radians(180.0f);
-      modelParam.axis = {0.0f, 0.0f, -1.0f};
-      float scale = 2.0;
+      modelParam.axis = {0.0f, 0.0f, 1.0f};
+      float scale = 1.0;
       Vec3 color = {200, 124, 70};
 
-      //generateModel(type, model, modelParam, scale, color, model.ind);
+      generateModel(type, model, modelParam, scale, color, model.ind);
     }
   }
 }

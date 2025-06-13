@@ -18,8 +18,7 @@ glm::vec3 reflect (const glm::vec3& I, const glm::vec3& N) {
 glm::vec3 lightIntensity (int modelInd, int triInd, Vec3 barycentric) {
 
   modelClass model = modelsWorld[modelInd];
-  modelIdx triInds = modelTriangleInd[modelInd];
-  Ind idx = triInds.idx[triInd];
+  Ind idx = modelTriangleInd[modelInd].idx[triInd];
   
   glm::vec3 v0(model.vertices[idx.v0].x, model.vertices[idx.v0].y, model.vertices[idx.v0].z);
   glm::vec3 v1(model.vertices[idx.v1].x, model.vertices[idx.v1].y, model.vertices[idx.v1].z);
@@ -32,9 +31,9 @@ glm::vec3 lightIntensity (int modelInd, int triInd, Vec3 barycentric) {
   glm::vec3 N(0.0f);
 
   if ((modelNormals[modelInd]).normals.size() != 0) {
+
     modelNormalClass modelNorms = modelNormals[modelInd];
-    modelIdx normInds = modelNormInd[modelInd];
-    Ind idx1 = normInds.idx[triInd];
+    Ind idx1 = modelNormInd[modelInd].idx[triInd];
     Vec3 normal = modelNorms.normals[idx1.v0]*barycentric.x + modelNorms.normals[idx1.v1]*barycentric.y + modelNorms.normals[idx1.v2]*barycentric.z;
     
     N = glm::normalize(glm::vec3(normal.x, normal.y, normal.z));
@@ -43,6 +42,7 @@ glm::vec3 lightIntensity (int modelInd, int triInd, Vec3 barycentric) {
   
   glm::vec3 total(0.0f);
   if (lightSources.size() != 0) {
+    
     for (glm::vec3& lightSrc : lightSources) {
       glm::vec3 L = glm::normalize(glm::vec3(lightSrc.x, lightSrc.y, lightSrc.z) - glm::vec3(x, y, z));
       glm::vec3 V = glm::normalize(cameraParam.pos - glm::vec3(x, y, z));

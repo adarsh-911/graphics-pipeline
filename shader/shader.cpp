@@ -59,7 +59,7 @@ int loadModels() {
       if (file.is_regular_file()) {
         fs::path path = file.path();
         std::string ext = path.extension().string();
-        std::string name = path.stem().string(); // filename without extension
+        std::string name = path.stem().string();
 
         if (ext == ".obj")
           obj_path = path;
@@ -224,7 +224,7 @@ void generateWorld (const std::vector<modelClass> models) {
 
       //generateModel(type, model, modelParam, scale, color, model.ind);
     }
-    if (model.name == "table2") {
+    if (model.name == "table") {
       type.object = true;
       modelParam.position = {0.0f, 0.0f, -4.0f};
       modelParam.angle = glm::radians(90.0f);

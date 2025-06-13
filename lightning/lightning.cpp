@@ -15,14 +15,11 @@ glm::vec3 reflect (const glm::vec3& I, const glm::vec3& N) {
     return I - 2.0f * glm::dot(I, N) * N;
 }
 
-glm::vec3 lightAmp (int modelInd, int triInd, Vec3 barycentric) {
+glm::vec3 lightIntensity (int modelInd, int triInd, Vec3 barycentric) {
 
   modelClass model = modelsWorld[modelInd];
   modelIdx triInds = modelTriangleInd[modelInd];
   Ind idx = triInds.idx[triInd];
-  
-  //float x = (model.vertices[idx.v0].x/model.vertices[idx.v0].w)*barycentric.x + (model.vertices[idx.v1].x/model.vertices[idx.v1].w)*barycentric.y + (model.vertices[idx.v2].x/model.vertices[idx.v2].w)*barycentric.z;
-  //float y = (model.vertices[idx.v0].y/model.vertices[idx.v0].w)*barycentric.x + (model.vertices[idx.v1].y/model.vertices[idx.v1].w)*barycentric.y + (model.vertices[idx.v2].y/model.vertices[idx.v2].w)*barycentric.z;
   
   glm::vec3 v0(model.vertices[idx.v0].x, model.vertices[idx.v0].y, model.vertices[idx.v0].z);
   glm::vec3 v1(model.vertices[idx.v1].x, model.vertices[idx.v1].y, model.vertices[idx.v1].z);
@@ -42,10 +39,7 @@ glm::vec3 lightAmp (int modelInd, int triInd, Vec3 barycentric) {
     
     N = glm::normalize(glm::vec3(normal.x, normal.y, normal.z));
   }
-  else {
-    N = glm::normalize(glm::cross(v1-v0, v2-v1));
-  }
-  //std::cout << x << y << z << "\n";
+  else N = glm::normalize(glm::cross(v1-v0, v2-v1));
   
   glm::vec3 total(0.0f);
   if (lightSources.size() != 0) {
@@ -67,7 +61,6 @@ glm::vec3 lightAmp (int modelInd, int triInd, Vec3 barycentric) {
       diffuse *= attenuation;
       specular *= attenuation;
       total += ambient + diffuse + specular;
-      //total = glm::pow(total, glm::vec3(1.0 / 2.2));
       float dFactor = std::clamp(1.0 - distance / 5.0, 0.0, 1.0);
       total += glm::vec3(dFactor, dFactor, dFactor);
     }

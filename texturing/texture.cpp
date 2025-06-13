@@ -26,17 +26,20 @@ std::vector<Color> loadTexture (const char* filename, int& width, int& height) {
 }
 
 Color extractColor (int modelInd, int triInd, Vec3 barycentric) {
-  modelIdx texIndInst = modelTexCordsInd[modelInd];
-  Ind idx = texIndInst.idx[triInd];
-  modelTexClass texInst = modelTexCords[modelInd];
-  std::vector<Vec2uv> texCords = texInst.texcoords;
+  Ind idx = (modelTexCordsInd[modelInd]).idx[triInd];
+  std::vector<Vec2uv> texCords = (modelTexCords[modelInd]).texcoords;
+
   int w =  modelTexColors[modelInd].width;
   int h = modelTexColors[modelInd].height;
+
   Vec2uv v0 = texCords[idx.v0];
   Vec2uv v1 = texCords[idx.v1];
   Vec2uv v2 = texCords[idx.v2];
+
   float u = barycentric.x*v0.u + barycentric.y*v1.u + barycentric.z*v2.u;
   float v = barycentric.x*v0.v + barycentric.y*v1.v + barycentric.z*v2.v;
+
   Color color = modelTexColors[modelInd].pixels[round(u*(w-1)) + round(v*(h-1))*w];
+  
   return color;
 }

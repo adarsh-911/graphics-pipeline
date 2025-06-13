@@ -9,6 +9,6 @@ Example:
 ```
 View the rendered output:
 ```bash
-feh output.ppm
+feh output.png
 ```
 ![Output](output.png)

@@ -11,4 +11,4 @@ View the rendered output:
 ```bash
 feh output.ppm
 ```
-![Output](output.ppm)
+![Output](output.png)

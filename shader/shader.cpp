@@ -234,7 +234,7 @@ void generateWorld (const std::vector<modelClass> models) {
 
       generateModel(type, model, modelParam, scale, color, model.ind);
     }
-    if (model.name == "pyobj") {
+    if (model.name == "pyramid") {
       type.object = true;
       modelParam.position = {0.0f, -2.0f, -4.0f};
       modelParam.angle = glm::radians(180.0f);

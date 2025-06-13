@@ -5,7 +5,7 @@ Run the executable in this format
 ```
 Example:
 ```bash
-./run 0.0 -3.5 0.0 0.0 -0.2 -1.0
+./run 0.0 -5.0 2.0 0.0 -0.2 -1.0
 ```
 View the rendered output:
 ```bash

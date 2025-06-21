@@ -1,4 +1,4 @@
-#include "../obj_loader/obj_loader.h"
+#include "../objLoader/obj_loader.h"
 #include "../shader/shader.h"
 #include "clip.h"
 
@@ -156,7 +156,7 @@ void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, c
         else {
           VOA.push_back(VBuff(v2_ndc, clip2.v1, clip3.v2, color, modelInd, triInd));
           std::vector<Vec3> corner = boundFind(v0_ndc, v1_ndc, v2_ndc, false);
-          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip2.v1, clip3.v2, color, modelInd, triInd));
+          if (corner.size() != 0) VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip2.v1, clip3.v2, color, modelInd, triInd));
         }
       }
       else {
@@ -171,7 +171,7 @@ void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, c
         else {
           VOA.push_back(VBuff(v0_ndc, clip1.v2, clip3.v1, color, modelInd, triInd));
           std::vector<Vec3> corner = boundFind(v0_ndc, v1_ndc, v2_ndc, false);
-          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip1.v2, clip3.v1, color, modelInd, triInd));
+          if (corner.size() != 0) VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip1.v2, clip3.v1, color, modelInd, triInd));
         }
       }
       else {
@@ -186,7 +186,7 @@ void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, c
         else {
           VOA.push_back(VBuff(v1_ndc, clip2.v2, clip1.v1, color, modelInd, triInd));
           std::vector<Vec3> corner = boundFind(v0_ndc, v1_ndc, v2_ndc, false);
-          VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip2.v2, clip1.v1, color, modelInd, triInd));
+          if (corner.size() != 0) VOA.push_back(VBuff(Vec3(corner[0].x, corner[0].y, corner[0].z), clip2.v2, clip1.v1, color, modelInd, triInd));
         }
       }
       else {

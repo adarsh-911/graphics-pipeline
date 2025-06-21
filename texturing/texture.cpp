@@ -1,6 +1,7 @@
 #define STB_IMAGE_IMPLEMENTATION
+#include <algorithm>
 #include "stb_image.h"
-#include "../obj_loader/obj_loader.h"
+#include "../objLoader/obj_loader.h"
 #include "../shader/shader.h"
 #include "texture.h"
 
@@ -39,7 +40,9 @@ Color extractColor (int modelInd, int triInd, Vec3 barycentric) {
   float u = barycentric.x*v0.u + barycentric.y*v1.u + barycentric.z*v2.u;
   float v = barycentric.x*v0.v + barycentric.y*v1.v + barycentric.z*v2.v;
 
-  Color color = modelTexColors[modelInd].pixels[round(u*(w-1)) + round(v*(h-1))*w];
+  int size = modelTexColors[modelInd].pixels.size();
+
+  Color color = modelTexColors[modelInd].pixels[std::min(static_cast<int>(round(u*(w-1)) + round(v*(h-1))*w), size -1)];
   
   return color;
 }

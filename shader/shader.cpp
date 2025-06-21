@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "../obj_loader/obj_loader.h"
+#include "../objLoader/obj_loader.h"
 #include "../texturing/texture.h"
 #include "shader.h"
 
@@ -18,7 +18,7 @@ std::vector<modelNormalClass> modelNormals;
 std::vector<modelIdx> modelNormInd;
 std::vector<Texture> modelTexColors;
 std::vector<glm::vec3> lightSources;
-Cam cameraParam(glm::vec3(0.0f), glm::vec3(0.0f));
+Camera cameraParam(glm::vec3(0.0f), glm::vec3(0.0f));
 
 const int WIDTH = 600; //400
 const int HEIGHT = 600; //240
@@ -64,7 +64,7 @@ int loadModels() {
         if (ext == ".obj")
           obj_path = path;
 
-        if (ext == ".jpg" or ext == ".png")
+        if (ext == ".jpg" or ext == ".png" or ext == ".jpeg")
           tex_path = path;
       }
     }
@@ -82,13 +82,13 @@ int loadModels() {
         modelNormalClass mNorm;
         modelIdx mNormIdx;
 
-        for (Vec4& vertex : loader.getVertices()) m.vertices.push_back(normalizeModel(vertex));
+        //for (Vec4& vertex : loader.getVertices()) m.vertices.push_back(normalizeModel(vertex));
         for (Vec4& vertex : loader.getVertices()) m.vertices.push_back(glm::vec4(vertex.x, vertex.y, vertex.z, vertex.w));
-        for (Vec2uv& texVertex : loader.getTexCords()) mTex.texcoords.push_back(texVertex);
-        for (Vec3& normalVertex : loader.getNormals()) mNorm.normals.push_back(normalVertex); 
+        //for (Vec2uv& texVertex : loader.getTexCords()) mTex.texcoords.push_back(texVertex);
+        for (Vec3& normalVertex : loader.getNormals()) mNorm.normals.push_back(normalVertex);
 
         mInd.idx = loader.getTriangleInd();
-        //mTex.texcoords = loader.getTexCords();
+        mTex.texcoords = loader.getTexCords();
         mTxInd.idx = loader.getTexInd();
         mNormIdx.idx = loader.getNormalInd();
         m.name = obj_path.stem().string();
@@ -121,7 +121,7 @@ int loadModels() {
   return 0;
 }
 
-glm::vec4 transformVertexWorld (const glm::vec4& vertex, const modelWorld modelParam, const int ind) {
+glm::vec4 transformToWorld (const glm::vec4& vertex, const modelWorld modelParam, const int ind) {
 
   glm::mat4 trans = glm::translate(glm::mat4(1.0f), modelParam.position);
   glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), modelParam.angle, modelParam.axis);
@@ -137,7 +137,7 @@ glm::vec4 transformVertexWorld (const glm::vec4& vertex, const modelWorld modelP
   return obj_world;
 }
 
-glm::vec4 transformToScreen (glm::vec4 obj_world, Cam camera) {
+glm::vec4 transformToScreen (glm::vec4 obj_world, Camera camera) {
   Plane near, far;
   near.org = glm::vec3(glm::translate(glm::mat4(1.0f), camera.dir * NEAR) * glm::vec4(camera.pos, 1.0f));
   near.norm = camera.dir;
@@ -145,10 +145,17 @@ glm::vec4 transformToScreen (glm::vec4 obj_world, Cam camera) {
   far.org = glm::vec3(glm::translate(glm::mat4(1.0f), camera.dir * FAR) * glm::vec4(camera.pos, 1.0f));
   far.norm = camera.dir;
 
-  glm::mat4 trans = glm::translate(glm::mat4(1.0f), glm::vec3(-camera.pos.x, -camera.pos.y, -camera.pos.z));  
-  glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f), signum(camera.dir.x)*float(acos(-camera.dir.z/sqrt(camera.dir.z*camera.dir.z + camera.dir.x*camera.dir.x))), {0.0f, -1.0f, 0.0f});
-  glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f), signum(camera.dir.y)*float(acos(-camera.dir.z/sqrt(camera.dir.z*camera.dir.z + camera.dir.y*camera.dir.y))), {1.0f, 0.0f, 0.0f});
-  glm::vec4 obj_cam = (trans * rotateY * rotateX) * obj_world;
+  //glm::mat4 trans1 = glm::translate(glm::mat4(1.0f), glm::vec3(-camera.pos.x, -camera.pos.y, -camera.pos.z));
+  //glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f), signum(camera.dir.x)*float(acos(-camera.dir.z/sqrt(camera.dir.z*camera.dir.z + camera.dir.x*camera.dir.x))), {0.0f, 1.0f, 0.0f});
+  //glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f), signum(camera.dir.y)*float(acos(-camera.dir.z/sqrt(camera.dir.z*camera.dir.z + camera.dir.y*camera.dir.y))), {1.0f, 0.0f, 0.0f});
+  //glm::mat4 trans2 = glm::translate(glm::mat4(1.0f), glm::vec3(camera.pos.x, camera.pos.y, camera.pos.z));
+
+  //glm::vec4 obj_cam = (trans2 * rotateY * rotateX * trans1) * obj_world;
+  glm::mat4 view = glm::lookAt(camera.pos, camera.pos + camera.dir, glm::vec3(0.0f, 1.0f, 0.0f));
+  glm::mat4 trans = glm::translate(glm::mat4(1.0f), glm::vec3(-camera.pos.x, -camera.pos.y, -camera.pos.z));
+  glm::vec4 obj_cam = (trans * view) * obj_world;
+
+  //glm::vec4 obj_cam = (trans * rotateY * rotateX) * obj_world;
 
   glm::mat4 projM = glm::perspective(fovy, (float)WIDTH/HEIGHT, NEAR, FAR);
   glm::vec4 obj_proj = projM * obj_cam; 
@@ -162,7 +169,7 @@ void generateModel (const Object type, const modelClass model, const modelWorld 
 
   for (const glm::vec4& vertex : model.vertices) {
     glm::vec4 scaled_vertex = glm::vec4(vertex.x*scale, vertex.y*scale, vertex.z*scale, 1.0f);
-    glm::vec4 transVertx = transformVertexWorld(scaled_vertex, modelParam, ind);
+    glm::vec4 transVertx = transformToWorld(scaled_vertex, modelParam, ind);
     if (type.light) sum += glm::vec3(transVertx.x, transVertx.y, transVertx.z);
     modelInst.vertices.push_back(transVertx);
   }
@@ -174,7 +181,7 @@ void generateModel (const Object type, const modelClass model, const modelWorld 
   if (type.light) lightSources.push_back(sum/static_cast<float>(modelInst.vertices.size()));
 }
 
-void cameraInputs (Cam camera) {
+void cameraInputs (Camera camera) {
   cameraParam = camera;
   for (const modelClass& modelWorldspace : modelsWorld) {
     modelClass modelInst1;
@@ -206,13 +213,13 @@ void generateWorld (const std::vector<modelClass> models) {
     }
     if (model.name == "wall") {
       type.object = true;
-      modelParam.position = {0.0f, 0.0f, -6.0f};
-      modelParam.angle = glm::radians(45.0f);
-      modelParam.axis = {0.0f, 0.0f, -1.0f};
-      float scale = 5.0;
+      modelParam.position = {-0.0f, -6.7f, -6.0f};
+      modelParam.angle = glm::radians(0.0f);
+      modelParam.axis = {1.0f, 0.0f, 0.0f};
+      float scale = 4.0;
       Vec3 color = {150, 130, 50};
 
-      //generateModel(type, model, modelParam, scale, color, model.ind);
+      generateModel(type, model, modelParam, scale, color, model.ind);
     }
     if (model.name == "box") {
       type.object = true;
@@ -229,7 +236,7 @@ void generateWorld (const std::vector<modelClass> models) {
       modelParam.position = {0.0f, 0.0f, -4.0f};
       modelParam.angle = glm::radians(90.0f);
       modelParam.axis = {1.0f, 0.0f, 0.0f};
-      float scale = 2.0;
+      float scale = 6.0;
       Vec3 color = {190, 133, 170};
 
       generateModel(type, model, modelParam, scale, color, model.ind);
@@ -239,7 +246,7 @@ void generateWorld (const std::vector<modelClass> models) {
       modelParam.position = {0.0f, -2.0f, -4.0f};
       modelParam.angle = glm::radians(180.0f);
       modelParam.axis = {0.0f, 0.0f, 1.0f};
-      float scale = 1.0;
+      float scale = 2.0;
       Vec3 color = {200, 124, 70};
 
       generateModel(type, model, modelParam, scale, color, model.ind);

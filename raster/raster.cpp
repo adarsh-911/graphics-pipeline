@@ -1,9 +1,10 @@
 #include <fstream>
-#include "../obj_loader/obj_loader.h"
+#include "../objLoader/obj_loader.h"
 #include "../shader/shader.h"
 #include "../clip/clip.h"
 #include "../texturing/texture.h"
 #include "../lightning/lightning.h"
+#include "raster.h"
 
 bool TEXTURE = true;
 bool LIGHTNING = true;
@@ -117,23 +118,4 @@ void savePPM(const std::string& filename) {
 void render() {
   zBuffInit();
   for (VBuff& v : VOA) drawTriangle(v.v0, v.v1, v.v2, v.color, v.modelInd, v.triInd);
-}
-
-int main(int argc, char* argv[]) {
-  
-  if (argc != 7) { std::cout << "Format: pos dir" << "\n"; return 1; }
-  
-  glm::vec3 pos = {std::stof(argv[1]), std::stof(argv[2]), std::stof(argv[3])};
-  glm::vec3 dir = {std::stof(argv[4]), std::stof(argv[5]), std::stof(argv[6])};
- 
-  loadModels();
-  generateWorld(models);
-  cameraInputs(Cam(pos, glm::normalize(dir)));
-  clip();
-  render();
-  
-  std::string pwd = std::string(std::filesystem::current_path());
-  savePPM(pwd + "/output.ppm");
-
-  return 0;
 }

@@ -26,16 +26,6 @@ struct Vec4 {
       : x(x_), y(y_), z(z_), w(w_) {}
 };
 
-struct Vertex {
-  Vec3 position;
-  Vec2uv texcoord;
-  Vec3 normal;
-};
-
-struct Triangle {
-  Vertex v0, v1, v2;
-};
-
 struct Ind {
   int v0, v1, v2;
 };
@@ -44,7 +34,6 @@ class OBJLoader {
   public:
     bool load(const std::string& filename);
 
-    const std::vector<Triangle>& getTriangles() const;
     std::vector<Vec4>& getVertices();
     std::vector<Ind>& getTriangleInd();
     std::vector<Vec2uv>& getTexCords();
@@ -53,11 +42,10 @@ class OBJLoader {
     std::vector<Ind>& getNormalInd();
 
   private:
-    std::vector<Triangle> triangles;
     std::vector<Ind> triangleInd;
     std::vector<Vec4> vertices;
     std::vector<Vec2uv> texcoords;
     std::vector<Ind> texInd;
-    std::vector<Vec3> objNormals;
+    std::vector<Vec3> normals;
     std::vector<Ind> normalInd;
 };

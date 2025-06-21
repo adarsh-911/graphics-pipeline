@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../obj_loader/obj_loader.h"
+#include "../objLoader/obj_loader.h"
 
 struct lineClip {
   Vec3 v1;

@@ -4,7 +4,6 @@
 #include <iostream>
 
 bool OBJLoader::load(const std::string& filename) {
-  triangles.clear();
   vertices.clear();
 
   std::ifstream file(filename);
@@ -12,10 +11,6 @@ bool OBJLoader::load(const std::string& filename) {
       std::cerr << "Failed to open OBJ file: " << filename << std::endl;
       return false;
   }
-
-  std::vector<Vec3> positions;
-  std::vector<Vec2uv> texcoords_copy;
-  std::vector<Vec3> normals;
 
   std::string line;
   while (std::getline(file, line)) {
@@ -27,19 +22,15 @@ bool OBJLoader::load(const std::string& filename) {
           Vec3 pos;
           ss >> pos.x >> pos.y >> pos.z;
           vertices.push_back(Vec4(pos.x, pos.y, pos.z));
-          positions.push_back(pos);
       } else if (prefix == "vt") {
           Vec2uv uv;
           ss >> uv.u >> uv.v;
           texcoords.push_back(uv);
-          texcoords_copy.push_back(uv);
       } else if (prefix == "vn") {
           Vec3 n;
           ss >> n.x >> n.y >> n.z;
-          objNormals.push_back(n);
           normals.push_back(n);
       } else if (prefix == "f") {
-          Triangle tri;
           Ind idx, idx1, idx2;
           for (int i = 0; i < 3; ++i) {
               std::string vert;
@@ -48,42 +39,21 @@ bool OBJLoader::load(const std::string& filename) {
               size_t firstSlash = vert.find('/');
               size_t secondSlash = vert.find('/', firstSlash + 1);
 
-              if (firstSlash == std::string::npos) {
-                  // Format: v
-                  sscanf(vert.c_str(), "%d", &vi);
-              } else if (secondSlash == std::string::npos) {
-                  // Format: v/t
-                  sscanf(vert.c_str(), "%d/%d", &vi, &ti);
-              } else if (firstSlash + 1 == secondSlash) {
-                  // Format: v//n
-                  sscanf(vert.c_str(), "%d//%d", &vi, &ni);
-              } else {
-                  // Format: v/t/n
-                  sscanf(vert.c_str(), "%d/%d/%d", &vi, &ti, &ni);
-              }
-              //sscanf(vert.c_str(), "%d/%d/%d", &vi, &ti, &ni);
+              if (firstSlash == std::string::npos) sscanf(vert.c_str(), "%d", &vi);
+              else if (secondSlash == std::string::npos) sscanf(vert.c_str(), "%d/%d", &vi, &ti);
+              else if (firstSlash + 1 == secondSlash) sscanf(vert.c_str(), "%d//%d", &vi, &ni);
+              else sscanf(vert.c_str(), "%d/%d/%d", &vi, &ti, &ni);
 
-              Vertex v;
-              if (vi > 0) v.position = positions[vi - 1];
-              if (ti > 0) v.texcoord = texcoords_copy[ti - 1];
-              if (ni > 0) v.normal = normals[ni - 1];
-
-              if (i == 0) {tri.v0 = v; idx.v0 = vi - 1; idx1.v0 = ti - 1; idx2.v0 = ni - 1;}
-              if (i == 1) {tri.v1 = v; idx.v1 = vi - 1; idx1.v1 = ti - 1; idx2.v1 = ni - 1;}
-              if (i == 2) {tri.v2 = v; idx.v2 = vi - 1; idx1.v2 = ti - 1; idx2.v2 = ni - 1;}
+              if (i == 0) {idx.v0 = vi - 1; idx1.v0 = ti - 1; idx2.v0 = ni - 1;}
+              if (i == 1) {idx.v1 = vi - 1; idx1.v1 = ti - 1; idx2.v1 = ni - 1;}
+              if (i == 2) {idx.v2 = vi - 1; idx1.v2 = ti - 1; idx2.v2 = ni - 1;}
           }
-          triangles.push_back(tri);
           triangleInd.push_back(idx);
           texInd.push_back(idx1);
           normalInd.push_back(idx2);
       }
   }
-
   return true;
-}
-
-const std::vector<Triangle>& OBJLoader::getTriangles() const {
-  return triangles;
 }
 
 std::vector<Ind>& OBJLoader::getTriangleInd() {
@@ -103,7 +73,7 @@ std::vector<Vec2uv>& OBJLoader::getTexCords() {
 }
 
 std::vector<Vec3>& OBJLoader::getNormals() {
-  return objNormals;
+  return normals;
 }
 
 std::vector<Ind>& OBJLoader::getNormalInd() {

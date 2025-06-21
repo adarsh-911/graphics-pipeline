@@ -1,4 +1,4 @@
-#include "../obj_loader/obj_loader.h"
+#include "../objLoader/obj_loader.h"
 #include "../shader/shader.h"
 
 float SHINE = 32.0f;

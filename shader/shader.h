@@ -2,7 +2,7 @@
 
 #include <filesystem>
 #include <glm/glm.hpp>
-#include "../obj_loader/obj_loader.h"
+#include "../objLoader/obj_loader.h"
 #include "../texturing/texture.h"
 
 namespace fs = std::filesystem;
@@ -47,10 +47,10 @@ struct Texture {
   std::string name;
 };
 
-struct Cam {
+struct Camera {
   glm::vec3 pos;
   glm::vec3 dir;
-  Cam(glm::vec3 _pos, glm::vec3 _dir) : pos(_pos), dir(_dir) {}
+  Camera(glm::vec3 _pos, glm::vec3 _dir) : pos(_pos), dir(_dir) {}
 };
 
 struct Plane {
@@ -65,7 +65,7 @@ struct Object {
 
 int loadModels();
 void generateWorld (const std::vector<modelClass> models);
-void cameraInputs (Cam camera);
+void cameraInputs (Camera camera);
 
 extern std::vector<modelClass> models;
 extern std::vector<modelClass> modelsWorld;
@@ -77,4 +77,4 @@ extern std::vector<Texture> modelTexColors;
 extern std::vector<modelNormalClass> modelNormals;
 extern std::vector<modelIdx> modelNormInd;
 extern std::vector<glm::vec3> lightSources;
-extern Cam cameraParam;
+extern Camera cameraParam;

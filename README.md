@@ -1,4 +1,4 @@
-# 3D Graphics Pipeline
+# Basic 3D Graphics Pipeline
 
 ## Build and Run
 Run the executable in this format

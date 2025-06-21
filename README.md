@@ -2,19 +2,19 @@
 
 ## Features
 
-- ✅ **OBJ Loader**: Parses geometry, texture coordinates, and normals from `.obj` files.
-- ✅ **Vertex Shader**: Transforms vertices from model space → world space → camera space → clip space.
-- ✅ **Camera System**: Custom camera transformation with configurable position and orientation.
-- ✅ **Perspective Projection**: Implemented using `glm::perspective`.
-- ✅ **Clipping**: Liang-Barsky algorithm applied in screen space to discard triangles outside the frustum.
-- ✅ **NDC Conversion**: Transforms clip space coordinates to normalized device coordinates (NDC).
-- ✅ **Rasterizer**: Triangle rasterization using edge functions and barycentric coordinates.
-- ✅ **Fragment Shader**:
+-  **OBJ Loader**: Parses geometry, texture coordinates, and normals from `.obj` files.
+-  **Vertex Shader**: Transforms vertices from model space → world space → camera space → clip space.
+-  **Camera System**: Custom camera transformation with configurable position and orientation.
+-  **Perspective Projection**: Implemented using `glm::perspective`.
+-  **Clipping**: Liang-Barsky algorithm applied in screen space to discard triangles outside the frustum.
+-  **NDC Conversion**: Transforms clip space coordinates to normalized device coordinates (NDC).
+-  **Rasterizer**: Triangle rasterization using edge functions and barycentric coordinates.
+-  **Fragment Shader**:
   - Interpolates texture coordinates and normals per-pixel.
   - Applies Lambertian lighting model.
   - Supports texture mapping using `stb_image`.
-- ✅ **Texture Mapping**: Per-pixel color sampling from loaded images.
-- ✅ **Image Output**: Final framebuffer is saved as `output.png`.
+-  **Texture Mapping**: Per-pixel color sampling from loaded images.
+-  **Image Output**: Final framebuffer is saved as `output.png`.
 
 ## Pipeline Overview
 

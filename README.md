@@ -1,22 +1,40 @@
 # 3D Graphics Pipeline
 
-## Features
+## Build and Run
+Run the executable in this format
+```bash
+./run {position} {direction}
+```
+Example:
+```bash
+./run 0.0 -3.0 1.0 0.0 0.2 -1.0
+```
+View the rendered output:
+```bash
+feh output.png
+```
+![Output](output.png)
 
--  **OBJ Loader**: Parses geometry, texture coordinates, and normals from `.obj` files.
+## Implementation
+
+### Features
+
+-  **OBJ Loader**: Parses geometry, texture coordinates, and normals from `.obj` files in `models/`.
 -  **Vertex Shader**: Transforms vertices from model space → world space → camera space → clip space.
 -  **Camera System**: Custom camera transformation with configurable position and orientation.
 -  **Perspective Projection**: Implemented using `glm::perspective`.
--  **Clipping**: Liang-Barsky algorithm applied in screen space to discard triangles outside the frustum.
+-  **Clipping**: Liang-Barsky algorithm applied in screen space to discard triangles outside the visible frustum.
 -  **NDC Conversion**: Transforms clip space coordinates to normalized device coordinates (NDC).
 -  **Rasterizer**: Triangle rasterization using edge functions and barycentric coordinates.
+-  **Z-Buffer test**: Discards the pixel with larger z during overlap.
 -  **Fragment Shader**:
   - Interpolates texture coordinates and normals per-pixel.
   - Applies Lambertian lighting model.
   - Supports texture mapping using `stb_image`.
--  **Texture Mapping**: Per-pixel color sampling from loaded images.
+-  **Texture Mapping**: Per-pixel color sampling method from loaded images.
 -  **Image Output**: Final framebuffer is saved as `output.png`.
 
-## Pipeline Overview
+### Pipeline Overview
 
 1. **Model Loading**
    - Loads `.obj` files and textures from `models/` directory.
@@ -49,20 +67,3 @@
 
 - [GLM (OpenGL Mathematics)](https://github.com/g-truc/glm): For matrix/vector math and projection.
 - [stb_image.h](https://github.com/nothings/stb): Header-only image loader for texture mapping.
-
-## Building and Running
-
-### Build and run
-Run the executable in this format:
-```bash
-./run {position} {direction}
-```
-For example:
-```bash
-./run 0.0 -5.0 2.0 0.0 -0.2 -1.0
-```
-View the rendered output:
-```bash
-feh output.png
-```
-![Output](output.png)

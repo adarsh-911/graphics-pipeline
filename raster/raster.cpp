@@ -107,7 +107,7 @@ void drawTriangle(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 color, int modelInd, int triIn
   }
 }
 
-void savePNG(const std::string& filename) {
+void savePPM(const std::string& filename) {
   std::ofstream ofs(filename, std::ios::binary);
   ofs << "P6\n" << WIDTH << " " << HEIGHT << "\n255\n";
   for (int y = 0; y < HEIGHT; ++y)

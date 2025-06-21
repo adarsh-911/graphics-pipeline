@@ -82,9 +82,7 @@ int loadModels() {
         modelNormalClass mNorm;
         modelIdx mNormIdx;
 
-        //for (Vec4& vertex : loader.getVertices()) m.vertices.push_back(normalizeModel(vertex));
         for (Vec4& vertex : loader.getVertices()) m.vertices.push_back(glm::vec4(vertex.x, vertex.y, vertex.z, vertex.w));
-        //for (Vec2uv& texVertex : loader.getTexCords()) mTex.texcoords.push_back(texVertex);
         for (Vec3& normalVertex : loader.getNormals()) mNorm.normals.push_back(normalVertex);
 
         mInd.idx = loader.getTriangleInd();
@@ -145,17 +143,9 @@ glm::vec4 transformToScreen (glm::vec4 obj_world, Camera camera) {
   far.org = glm::vec3(glm::translate(glm::mat4(1.0f), camera.dir * FAR) * glm::vec4(camera.pos, 1.0f));
   far.norm = camera.dir;
 
-  //glm::mat4 trans1 = glm::translate(glm::mat4(1.0f), glm::vec3(-camera.pos.x, -camera.pos.y, -camera.pos.z));
-  //glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f), signum(camera.dir.x)*float(acos(-camera.dir.z/sqrt(camera.dir.z*camera.dir.z + camera.dir.x*camera.dir.x))), {0.0f, 1.0f, 0.0f});
-  //glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f), signum(camera.dir.y)*float(acos(-camera.dir.z/sqrt(camera.dir.z*camera.dir.z + camera.dir.y*camera.dir.y))), {1.0f, 0.0f, 0.0f});
-  //glm::mat4 trans2 = glm::translate(glm::mat4(1.0f), glm::vec3(camera.pos.x, camera.pos.y, camera.pos.z));
-
-  //glm::vec4 obj_cam = (trans2 * rotateY * rotateX * trans1) * obj_world;
   glm::mat4 view = glm::lookAt(camera.pos, camera.pos + camera.dir, glm::vec3(0.0f, 1.0f, 0.0f));
   glm::mat4 trans = glm::translate(glm::mat4(1.0f), glm::vec3(-camera.pos.x, -camera.pos.y, -camera.pos.z));
   glm::vec4 obj_cam = (trans * view) * obj_world;
-
-  //glm::vec4 obj_cam = (trans * rotateY * rotateX) * obj_world;
 
   glm::mat4 projM = glm::perspective(fovy, (float)WIDTH/HEIGHT, NEAR, FAR);
   glm::vec4 obj_proj = projM * obj_cam; 

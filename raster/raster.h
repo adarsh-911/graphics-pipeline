@@ -2,4 +2,4 @@
 #include <bits/stdc++.h>
 
 void render();
-void savePNG(const std::string& filename);
+void savePPM(const std::string& filename);

@@ -14,5 +14,5 @@ void run_localTest(char* argv[]) {
   render();
   
   std::string pwd = std::string(std::filesystem::current_path());
-  savePNG(pwd + "/output.png");
+  savePPM(pwd + "/output.ppm");
 }

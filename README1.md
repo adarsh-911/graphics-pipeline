@@ -1,0 +1,14 @@
+# Vertex-Shader
+Run the executable in this format
+```bash
+./run {position} {direction}
+```
+Example:
+```bash
+./run 0.0 -5.0 2.0 0.0 -0.2 -1.0
+```
+View the rendered output:
+```bash
+feh output.png
+```
+![Output](output.png)

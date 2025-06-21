@@ -11,6 +11,7 @@ void run_localTest(char* argv[]) {
   generateWorld(models);
   cameraInputs(Camera(pos, glm::normalize(dir)));
   clip();
+  clipStatusUpdate();
   render();
   
   std::string pwd = std::string(std::filesystem::current_path());

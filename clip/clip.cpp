@@ -3,6 +3,14 @@
 #include "clip.h"
 
 std::vector<VBuff> VOA;
+std::vector<bool> clipStatus_temp;
+std::vector<bool> clipStatus;
+
+bool floatEq(float x, float y) {
+  float eps = 1e-5;
+  if (std::fabs(x-y) < eps) return true;
+  else return false;
+}
 
 lineClip liang_barskyClip (const glm::vec4 ver1, const glm::vec4 ver2) {
   lineClip clipped;
@@ -83,7 +91,10 @@ void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, c
   Vec3 v2_ndc = {v2.x/v2.w, v2.y/v2.w, v2.z/v2.w};
 
   int check = (int)clip1.status + (int)clip2.status + (int)clip3.status;
-  
+
+  if (check > 0) clipStatus_temp.push_back(true);
+  else clipStatus_temp.push_back(false);
+
   if (check == 0) {
     if (!clip1.out) {
       VOA.push_back(VBuff(v0_ndc, v1_ndc, v2_ndc, color, modelInd, triInd));
@@ -151,7 +162,7 @@ void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, c
   if (check == 2) {
     if (!clip1.status) {
       if (clip1.out) {
-        if ((clip2.v1.x == clip3.v2.x) || (clip2.v1.y == clip3.v2.y))
+        if (floatEq(clip2.v1.x, clip3.v2.x) || floatEq(clip2.v1.y, clip3.v2.y))
           VOA.push_back(VBuff(v2_ndc, clip2.v1, clip3.v2, color, modelInd, triInd));
         else {
           VOA.push_back(VBuff(v2_ndc, clip2.v1, clip3.v2, color, modelInd, triInd));
@@ -160,13 +171,23 @@ void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, c
         }
       }
       else {
-        VOA.push_back(VBuff(v0_ndc, v1_ndc, clip3.v1, color, modelInd, triInd));
-        VOA.push_back(VBuff(v1_ndc, clip3.v1, clip2.v2, color, modelInd, triInd));
+        if (floatEq(clip2.v2.x, clip3.v1.x) || floatEq(clip2.v2.y, clip3.v1.y)) {
+          VOA.push_back(VBuff(v0_ndc, v1_ndc, clip3.v1, color, modelInd, triInd));
+          VOA.push_back(VBuff(v1_ndc, clip3.v1, clip2.v2, color, modelInd, triInd));
+        }
+        else {
+          std::vector<Vec3> corner = boundFind(v0_ndc, v1_ndc, v2_ndc, false);
+          if (corner.size() != 0) {
+            VOA.push_back(VBuff(v0_ndc, v1_ndc, Vec3(corner[0].x, corner[0].y, corner[0].z), color, modelInd, triInd));
+            VOA.push_back(VBuff(v0_ndc, clip3.v1, Vec3(corner[0].x, corner[0].y, corner[0].z), color, modelInd, triInd));
+            VOA.push_back(VBuff(clip2.v2, v1_ndc, Vec3(corner[0].x, corner[0].y, corner[0].z), color, modelInd, triInd));
+          }
+        }
       }
     }
     if (!clip2.status) {
       if (clip2.out) {
-        if ((clip1.v2.x == clip3.v1.x) || (clip1.v2.y == clip3.v1.y))
+        if (floatEq(clip1.v2.x, clip3.v1.x) || floatEq(clip1.v2.y, clip3.v1.y))
           VOA.push_back(VBuff(v0_ndc, clip1.v2, clip3.v1, color, modelInd, triInd));
         else {
           VOA.push_back(VBuff(v0_ndc, clip1.v2, clip3.v1, color, modelInd, triInd));
@@ -175,13 +196,23 @@ void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, c
         }
       }
       else {
-        VOA.push_back(VBuff(v1_ndc, v2_ndc, clip1.v1, color, modelInd, triInd));
-        VOA.push_back(VBuff(v2_ndc, clip1.v1, clip3.v2, color, modelInd, triInd));
+        if (floatEq(clip1.v1.x, clip3.v2.x) || floatEq(clip1.v1.y, clip3.v2.y)) {
+          VOA.push_back(VBuff(v1_ndc, v2_ndc, clip1.v1, color, modelInd, triInd));
+          VOA.push_back(VBuff(v2_ndc, clip1.v1, clip3.v2, color, modelInd, triInd));
+        }
+        else {
+          std::vector<Vec3> corner = boundFind(v0_ndc, v1_ndc, v2_ndc, false);
+          if (corner.size() != 0) {
+            VOA.push_back(VBuff(v1_ndc, v2_ndc, Vec3(corner[0].x, corner[0].y, corner[0].z), color, modelInd, triInd));
+            VOA.push_back(VBuff(v1_ndc, clip1.v1, Vec3(corner[0].x, corner[0].y, corner[0].z), color, modelInd, triInd));
+            VOA.push_back(VBuff(clip3.v2, v2_ndc, Vec3(corner[0].x, corner[0].y, corner[0].z), color, modelInd, triInd));
+          }
+        }
       }
     }
     if (!clip3.status) {
       if (clip3.out) {
-        if ((clip2.v2.x == clip1.v1.x) || (clip2.v2.y == clip1.v1.y))
+        if (floatEq(clip2.v2.x, clip1.v1.x) || floatEq(clip2.v2.y, clip1.v1.y))
           VOA.push_back(VBuff(v1_ndc, clip2.v2, clip1.v1, color, modelInd, triInd));
         else {
           VOA.push_back(VBuff(v1_ndc, clip2.v2, clip1.v1, color, modelInd, triInd));
@@ -190,8 +221,18 @@ void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, c
         }
       }
       else {
-        VOA.push_back(VBuff(v0_ndc, v2_ndc, clip1.v2, color, modelInd, triInd));
-        VOA.push_back(VBuff(v2_ndc, clip1.v2, clip2.v1, color, modelInd, triInd));
+        if (floatEq(clip2.v1.x, clip1.v2.x) || floatEq(clip2.v1.y, clip1.v2.y)) {
+          VOA.push_back(VBuff(v0_ndc, v2_ndc, clip1.v2, color, modelInd, triInd));
+          VOA.push_back(VBuff(v2_ndc, clip1.v2, clip2.v1, color, modelInd, triInd));
+        }
+        else {
+          std::vector<Vec3> corner = boundFind(v0_ndc, v1_ndc, v2_ndc, false);
+          if (corner.size() != 0) {
+            VOA.push_back(VBuff(v0_ndc, v2_ndc, Vec3(corner[0].x, corner[0].y, corner[0].z), color, modelInd, triInd));
+            VOA.push_back(VBuff(v0_ndc, clip1.v2, Vec3(corner[0].x, corner[0].y, corner[0].z), color, modelInd, triInd));
+            VOA.push_back(VBuff(clip2.v1, v2_ndc, Vec3(corner[0].x, corner[0].y, corner[0].z), color, modelInd, triInd));
+          }
+        }
       }
     }
   }
@@ -217,7 +258,7 @@ void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, c
   }
 }
 
-void clip () {
+void clip() {
   for (const modelClass& transModel : modelsCam) {
     for (const modelIdx& triIndModel : modelTriangleInd) {
       if (triIndModel.name == transModel.name) {
@@ -231,5 +272,21 @@ void clip () {
         }
       }
     }
+  }
+}
+
+void clipStatusUpdate() {
+  int i = 0;
+  for (VBuff& v : VOA) {
+    int prevModelIdx = 0, prevtriIdx = 0;
+
+    int currModelIdx = v.modelInd;
+    int currTriIdx = v.triInd;
+
+    if (currModelIdx == prevModelIdx && currTriIdx == prevtriIdx) clipStatus.push_back(clipStatus_temp[i]);
+    else i++;
+
+    prevModelIdx = currModelIdx;
+    prevtriIdx = currTriIdx;
   }
 }

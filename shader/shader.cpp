@@ -147,8 +147,8 @@ glm::vec4 transformToScreen (glm::vec4 obj_world, Camera camera) {
   glm::mat4 trans = glm::translate(glm::mat4(1.0f), glm::vec3(-camera.pos.x, -camera.pos.y, -camera.pos.z));
   glm::vec4 obj_cam = (trans * view) * obj_world;
 
-  glm::mat4 projM = glm::perspective(fovy, (float)WIDTH/HEIGHT, NEAR, FAR);
-  glm::vec4 obj_proj = projM * obj_cam; 
+  glm::mat4 perspective_proj = glm::perspective(fovy, (float)WIDTH/HEIGHT, NEAR, FAR);
+  glm::vec4 obj_proj = perspective_proj * obj_cam;
 
   return glm::vec4(obj_proj.x, obj_proj.y, obj_proj.z, obj_proj.w);
 }

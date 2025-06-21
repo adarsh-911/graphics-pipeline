@@ -11,19 +11,15 @@ bool LIGHTNING = true;
 
 const int WIDTH = 600;
 const int HEIGHT = 600;
+
 unsigned char framebuffer[HEIGHT][WIDTH][3] = {};  // initialized to black
 float zBuffer[HEIGHT][WIDTH] = {};
+std::vector<bool> clipStatus1;
 
 void zBuffInit() {
   for (int i = 0; i < HEIGHT; ++i)
     for (int j = 0; j < WIDTH; ++j)
         zBuffer[i][j] = INFINITY;
-}
-
-Vec3 normalizeToPixel(const Vec3& screenCoord) {
-  float x = (screenCoord.x + 1.0f) * 0.5f * (WIDTH - 1);   // Maps x from [-1, 1] to [0, WIDTH-1]
-  float y = ((screenCoord.y + 1.0f) * 0.5f) * (HEIGHT - 1);  // Maps y from [-1, 1] to [0, HEIGHT-1]
-  return Vec3(x, y, screenCoord.z);
 }
 
 pixelBuff insideTriangle(int x, int y, const Vec3& v0, const Vec3& v1, const Vec3& v2) {
@@ -58,7 +54,7 @@ pixelBuff insideTriangle(int x, int y, const Vec3& v0, const Vec3& v1, const Vec
   return pixel;
 }
 
-void drawTriangle(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 color, int modelInd, int triInd) {
+void drawTriangle(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 color, int modelInd, int triInd, int i) {
 
   Vec3 v0Pixel = normalizeToPixel(v0);
   Vec3 v1Pixel = normalizeToPixel(v1);
@@ -75,7 +71,7 @@ void drawTriangle(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 color, int modelInd, int triIn
       if (currentPixel.draw) {
         
         if (TEXTURE and LIGHTNING) {
-          Color texColor = extractColor(modelInd, triInd, currentPixel.barycentric);
+          Color texColor = extractColor(modelInd, triInd, currentPixel.barycentric, x, y, zBuffer[y][x], i);
           glm::vec3 lightAmount = lightIntensity(modelInd, triInd, currentPixel.barycentric);
           framebuffer[y][x][0] = std::min(static_cast<float>(texColor.r)*lightAmount.x, 255.0f);
           framebuffer[y][x][1] = std::min(static_cast<float>(texColor.g)*lightAmount.y, 255.0f);
@@ -83,7 +79,7 @@ void drawTriangle(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 color, int modelInd, int triIn
         }
 
         else if (TEXTURE) {
-          Color texColor = extractColor(modelInd, triInd, currentPixel.barycentric);
+          Color texColor = extractColor(modelInd, triInd, currentPixel.barycentric, x, y, zBuffer[y][x], i);
           framebuffer[y][x][0] = std::min(static_cast<float>(texColor.r), 255.0f);
           framebuffer[y][x][1] = std::min(static_cast<float>(texColor.g), 255.0f);
           framebuffer[y][x][2] = std::min(static_cast<float>(texColor.b), 255.0f);
@@ -117,5 +113,6 @@ void savePPM(const std::string& filename) {
 
 void render() {
   zBuffInit();
-  for (VBuff& v : VOA) drawTriangle(v.v0, v.v1, v.v2, v.color, v.modelInd, v.triInd);
+  int i = 0;
+  for (VBuff& v : VOA) drawTriangle(v.v0, v.v1, v.v2, v.color, v.modelInd, v.triInd, i); i++;
 }

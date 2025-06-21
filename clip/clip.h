@@ -21,5 +21,7 @@ struct VBuff {
 
 float edgeFunc(const Vec3& v0, const Vec3& v1, const Vec3& v2);
 void clip();
+void clipStatusUpdate();
 
 extern std::vector<VBuff> VOA;
+extern std::vector<bool> clipStatus;

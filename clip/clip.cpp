@@ -92,6 +92,8 @@ void clipTriangle (const glm::vec4 v0, const glm::vec4 v1, const glm::vec4 v2, c
 
   int check = (int)clip1.status + (int)clip2.status + (int)clip3.status;
 
+  //std::cout << check << "\n";
+
   if (check > 0) clipStatus_temp.push_back(true);
   else clipStatus_temp.push_back(false);
 

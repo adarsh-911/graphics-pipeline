@@ -29,21 +29,41 @@ Vec3 find_barycentric(int x, int y, Vec3 v0, Vec3 v1, Vec3 v2) {
   return Vec3(w0, w1, w2);
 }
 
-std::vector<Color> loadTexture (const char* filename, int& width, int& height) {
-  int channels;
-  unsigned char* data = stbi_load(filename, &width, &height, &channels, 3); // force RGB
-  if (!data) {
-      std::cerr << "Failed to load image: " << filename << "\n";
-      return {};
-  }
-  std::vector<Color> pixels;
-  pixels.reserve(width * height);
-  for (int i = 0; i < width * height * 3; i += 3) {
-      Color c = { data[i], data[i + 1], data[i + 2] };
-      pixels.push_back(c);
-  }
-  stbi_image_free(data);
-  return pixels;
+Color bilinear_filtering(int w, int h, float u, float v, std::vector<Color>& texels) {
+  float tex_x = u * (w - 1);
+  float tex_y = v * (h - 1);
+
+  float fx = tex_x - floor(tex_x);
+  float fy = tex_y - floor(tex_y);
+  int x0 = static_cast<int>(floor(tex_x));
+  int y0 = static_cast<int>(floor(tex_y));
+  int x1 = std::min(x0 + 1, w - 1);
+  int y1 = std::min(y0 + 1, h - 1);
+
+  Color c00 = texels[y0 * w + x0];
+  Color c10 = texels[y0 * w + x1];
+  Color c01 = texels[y1 * w + x0];
+  Color c11 = texels[y1 * w + x1];
+
+  Vec3 c00f(static_cast<float>(c00.r), static_cast<float>(c00.g), static_cast<float>(c00.b));
+  Vec3 c10f(static_cast<float>(c10.r), static_cast<float>(c10.g), static_cast<float>(c10.b));
+  Vec3 c01f(static_cast<float>(c01.r), static_cast<float>(c01.g), static_cast<float>(c01.b));
+  Vec3 c11f(static_cast<float>(c11.r), static_cast<float>(c11.g), static_cast<float>(c11.b));
+
+  Vec3 colorf = 
+      c00f * (1 - fx) * (1 - fy) +
+      c10f * fx * (1 - fy) +
+      c01f * (1 - fx) * fy +
+      c11f * fx * fy;
+
+  Color color = {static_cast<u_char>(colorf.x), static_cast<u_char>(colorf.y), static_cast<u_char>(colorf.z)};
+  return color;
+}
+
+Color uv_rounding(int w, int h, float u, float v, std::vector<Color>& texels) {
+
+  Color color = texels[std::clamp(0, static_cast<int>(round(u*(w-1)) + round(v*(h-1))*w), static_cast<int>(texels.size()-1))];
+  return color;
 }
 
 Color extractColor (int modelInd, int triInd, Vec3 barycentric, int x, int y, float z, int i) {
@@ -71,10 +91,27 @@ Color extractColor (int modelInd, int triInd, Vec3 barycentric, int x, int y, fl
 
   u = std::clamp(0.0f, u, 1.0f);
   v = std::clamp(0.0f, v, 1.0f);
-  
-  int size = modelTexColors[modelInd].pixels.size();
 
-  Color color = modelTexColors[modelInd].pixels[std::clamp(0, static_cast<int>(round(u*(w-1)) + round(v*(h-1))*w), size -1)];
-  
+  //std::cout << ver0.z << " " << ver1.z << " " << ver2.z << " " << z << "\n";
+
+  //Color color = uv_rounding(w, h, u, v, modelTexColors[modelInd].pixels);
+  Color color = bilinear_filtering(w, h, u, v, modelTexColors[modelInd].pixels);
   return color;
+}
+
+std::vector<Color> loadTexture (const char* filename, int& width, int& height) {
+  int channels;
+  unsigned char* data = stbi_load(filename, &width, &height, &channels, 3); // force RGB
+  if (!data) {
+      std::cerr << "Failed to load image: " << filename << "\n";
+      return {};
+  }
+  std::vector<Color> pixels;
+  pixels.reserve(width * height);
+  for (int i = 0; i < width * height * 3; i += 3) {
+      Color c = { data[i], data[i + 1], data[i + 2] };
+      pixels.push_back(c);
+  }
+  stbi_image_free(data);
+  return pixels;
 }

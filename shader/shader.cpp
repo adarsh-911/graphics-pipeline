@@ -72,48 +72,52 @@ int loadModels() {
     if (!obj_path.empty() && !tex_path.empty() &&
       obj_path.stem() == tex_path.stem()) {
 
-      OBJLoader loader;
-      if (!loader.load(obj_path)) return 1;
+      std::string modelName = obj_path.stem().string();
+
+      if (modelName == "box") continue;
       else {
-        modelClass m;
-        modelIdx mInd;
-        modelTexClass mTex;
-        modelIdx mTxInd;
-        modelNormalClass mNorm;
-        modelIdx mNormIdx;
+        OBJLoader loader;
+        if (!loader.load(obj_path)) return 1;
+        else {
+          modelClass m;
+          modelIdx mInd;
+          modelTexClass mTex;
+          modelIdx mTxInd;
+          modelNormalClass mNorm;
+          modelIdx mNormIdx;
 
-        for (Vec4& vertex : loader.getVertices()) m.vertices.push_back(glm::vec4(vertex.x, vertex.y, vertex.z, vertex.w));
-        for (Vec3& normalVertex : loader.getNormals()) mNorm.normals.push_back(normalVertex);
+          for (Vec4& vertex : loader.getVertices()) m.vertices.push_back(glm::vec4(vertex.x, vertex.y, vertex.z, vertex.w));
+          for (Vec3& normalVertex : loader.getNormals()) mNorm.normals.push_back(normalVertex);
 
-        mInd.idx = loader.getTriangleInd();
-        mTex.texcoords = loader.getTexCords();
-        mTxInd.idx = loader.getTexInd();
-        mNormIdx.idx = loader.getNormalInd();
-        m.name = obj_path.stem().string();
-        m.ind = models.size();
+          mInd.idx = loader.getTriangleInd();
+          mTex.texcoords = loader.getTexCords();
+          mTxInd.idx = loader.getTexInd();
+          mNormIdx.idx = loader.getNormalInd();
+          m.name = obj_path.stem().string();
+          m.ind = models.size();
 
-        std::string modelName = obj_path.stem().string();
-        mInd.name = modelName;
-        mTex.name = modelName;
-        mTxInd.name = modelName;
-        mNorm.name = modelName;
-        mNormIdx.name = modelName;
-        
-        models.push_back(m);
-        modelTriangleInd.push_back(mInd);
-        modelTexCords.push_back(mTex);
-        modelTexCordsInd.push_back(mTxInd);
-        modelNormals.push_back(mNorm);
-        modelNormInd.push_back(mNormIdx);
+          mInd.name = modelName;
+          mTex.name = modelName;
+          mTxInd.name = modelName;
+          mNorm.name = modelName;
+          mNormIdx.name = modelName;
+          
+          models.push_back(m);
+          modelTriangleInd.push_back(mInd);
+          modelTexCords.push_back(mTex);
+          modelTexCordsInd.push_back(mTxInd);
+          modelNormals.push_back(mNorm);
+          modelNormInd.push_back(mNormIdx);
+        }
+        Texture texInst;
+        int w, h;
+        std::vector<Color> colors = loadTexture(tex_path.string().c_str(), w, h);
+        texInst.pixels = colors;
+        texInst.width = w;
+        texInst.height = h;
+        texInst.name = tex_path.stem().string();
+        modelTexColors.push_back(texInst);
       }
-      Texture texInst;
-      int w, h;
-      std::vector<Color> colors = loadTexture(tex_path.string().c_str(), w, h);
-      texInst.pixels = colors;
-      texInst.width = w;
-      texInst.height = h;
-      texInst.name = tex_path.stem().string();
-      modelTexColors.push_back(texInst);
     }
   }
   return 0;
@@ -203,7 +207,7 @@ void generateWorld (const std::vector<modelClass> models) {
     }
     if (model.name == "wall") {
       type.object = true;
-      modelParam.position = {-0.0f, -6.7f, -6.0f};
+      modelParam.position = {0.0f, -6.7f, -6.0f};
       modelParam.angle = glm::radians(0.0f);
       modelParam.axis = {1.0f, 0.0f, 0.0f};
       float scale = 4.0;

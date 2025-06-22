@@ -20,6 +20,8 @@ std::vector<Texture> modelTexColors;
 std::vector<glm::vec3> lightSources;
 Camera cameraParam(glm::vec3(0.0f), glm::vec3(0.0f));
 
+glm::mat4 transform_matrix;
+
 const int WIDTH = 600; //400
 const int HEIGHT = 600; //240
 
@@ -74,7 +76,7 @@ int loadModels() {
 
       std::string modelName = obj_path.stem().string();
 
-      if (modelName == "box") continue;
+      if (modelName == "box" || modelName == "pyramid") continue;
       else {
         OBJLoader loader;
         if (!loader.load(obj_path)) return 1;
@@ -152,6 +154,8 @@ glm::vec4 transformToScreen (glm::vec4 obj_world, Camera camera) {
   glm::vec4 obj_cam = (trans * view) * obj_world;
 
   glm::mat4 perspective_proj = glm::perspective(fovy, (float)WIDTH/HEIGHT, NEAR, FAR);
+  transform_matrix = perspective_proj * trans * view;
+  
   glm::vec4 obj_proj = perspective_proj * obj_cam;
 
   return glm::vec4(obj_proj.x, obj_proj.y, obj_proj.z, obj_proj.w);
@@ -197,9 +201,9 @@ void generateWorld (const std::vector<modelClass> models) {
     Object type;
     if (model.name == "light") {
       type.light = true;
-      modelParam.position = {0.0f, -5.0f, -3.5f};
-      modelParam.angle = glm::radians(0.0f);
-      modelParam.axis = {0.0f, 0.0f, -1.0f};
+      modelParam.position = {0.0f, -5.0f, -4.0f};
+      modelParam.angle = glm::radians(90.0f);
+      modelParam.axis = {1.0f, 0.0f, 0.0f};
       float scale = 0.25;
       Vec3 color = {255, 255, 255};
 
@@ -207,10 +211,60 @@ void generateWorld (const std::vector<modelClass> models) {
     }
     if (model.name == "wall") {
       type.object = true;
-      modelParam.position = {0.0f, -6.7f, -6.0f};
+      modelParam.position = {0.0f, 0.0f, -15.0f};
       modelParam.angle = glm::radians(0.0f);
       modelParam.axis = {1.0f, 0.0f, 0.0f};
-      float scale = 4.0;
+      float scale = 8.0;
+      Vec3 color = {150, 130, 50};
+
+      generateModel(type, model, modelParam, scale, color, model.ind);
+    }
+    if (model.name == "wall1") {
+      type.object = true;
+      modelParam.position = {-8.0f, 0.0f, -7.0f};
+      modelParam.angle = glm::radians(90.0f);
+      modelParam.axis = {0.0f, 1.0f, 0.0f};
+      float scale = 8.0;
+      Vec3 color = {150, 130, 50};
+
+      generateModel(type, model, modelParam, scale, color, model.ind);
+    }
+    if (model.name == "wall2") {
+      type.object = true;
+      modelParam.position = {8.0f, 0.0f, -7.0f};
+      modelParam.angle = glm::radians(90.0f);
+      modelParam.axis = {0.0f, -1.0f, 0.0f};
+      float scale = 8.0;
+      Vec3 color = {150, 130, 50};
+
+      generateModel(type, model, modelParam, scale, color, model.ind);
+    }
+    if (model.name == "floor") {
+      type.object = true;
+      modelParam.position = {0.0f, 8.0f, -7.0f};
+      modelParam.angle = glm::radians(90.0f);
+      modelParam.axis = {1.0f, 0.0f, 0.0f};
+      float scale = 8.0;
+      Vec3 color = {150, 130, 50};
+
+      generateModel(type, model, modelParam, scale, color, model.ind);
+    }
+    if (model.name == "roof") {
+      type.object = true;
+      modelParam.position = {0.0f, -8.0f, -7.0f};
+      modelParam.angle = glm::radians(90.0f);
+      modelParam.axis = {-1.0f, 0.0f, 0.0f};
+      float scale = 8.0;
+      Vec3 color = {150, 130, 50};
+
+      generateModel(type, model, modelParam, scale, color, model.ind);
+    }
+    if (model.name == "card") {
+      type.object = true;
+      modelParam.position = {0.0f, 0.0f, -14.93f};
+      modelParam.angle = glm::radians(0.0f);
+      modelParam.axis = {0.0f, 1.0f, 0.0f};
+      float scale = 7.0;
       Vec3 color = {150, 130, 50};
 
       generateModel(type, model, modelParam, scale, color, model.ind);
@@ -227,20 +281,20 @@ void generateWorld (const std::vector<modelClass> models) {
     }
     if (model.name == "table") {
       type.object = true;
-      modelParam.position = {0.0f, 0.0f, -4.0f};
+      modelParam.position = {0.0f, 7.0f, -3.0f};
       modelParam.angle = glm::radians(90.0f);
       modelParam.axis = {1.0f, 0.0f, 0.0f};
-      float scale = 6.0;
+      float scale = 6.5;
       Vec3 color = {190, 133, 170};
 
       generateModel(type, model, modelParam, scale, color, model.ind);
     }
     if (model.name == "pyramid") {
       type.object = true;
-      modelParam.position = {0.0f, -2.0f, -4.0f};
+      modelParam.position = {0.0f, 3.0f, -0.5f};
       modelParam.angle = glm::radians(180.0f);
       modelParam.axis = {0.0f, 0.0f, 1.0f};
-      float scale = 2.0;
+      float scale = 1.0;
       Vec3 color = {200, 124, 70};
 
       generateModel(type, model, modelParam, scale, color, model.ind);

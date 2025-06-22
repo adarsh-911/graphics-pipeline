@@ -4,6 +4,7 @@
 #include "../clip/clip.h"
 #include "../texturing/texture.h"
 #include "../lightning/lightning.h"
+#include "../clip/zClip.h"
 #include "raster.h"
 
 bool TEXTURE = true;
@@ -20,6 +21,31 @@ void zBuffInit() {
   for (int i = 0; i < HEIGHT; ++i)
     for (int j = 0; j < WIDTH; ++j)
         zBuffer[i][j] = INFINITY;
+}
+
+Vec3 find_barycentric(int x, int y, Vec3 v0, Vec3 v1, Vec3 v2) {
+  float px = x + 0.5f;
+  float py = y + 0.5f;
+  float w0 = 0, w1 = 0, w2 = 0;
+  float area = edgeFunc(v0, v1, v2);
+  if (area != 0) {
+    w0 = edgeFunc(Vec3(px, py, 1.0f), v1, v2)/area;
+    w1 = edgeFunc(Vec3(px, py, 1.0f), v2, v0)/area;
+    w2 = edgeFunc(Vec3(px, py, 1.0f), v0, v1)/area;
+  }
+  return Vec3(w0, w1, w2);
+}
+
+Vec3 extractBarycentric(int modelInd, int triInd, float x, float y) {
+  Ind idx1 = (modelTriangleInd[modelInd]).idx[triInd];
+  std::vector<glm::vec4> vertices = (modelsCam[modelInd].vertices);
+
+  Vec3 ver0 = normalizeToPixel(Vec3(vertices[idx1.v0].x/vertices[idx1.v0].w, vertices[idx1.v0].y/vertices[idx1.v0].w, vertices[idx1.v0].z/vertices[idx1.v0].w));
+  Vec3 ver1 = normalizeToPixel(Vec3(vertices[idx1.v1].x/vertices[idx1.v1].w, vertices[idx1.v1].y/vertices[idx1.v1].w, vertices[idx1.v1].z/vertices[idx1.v1].w));
+  Vec3 ver2 = normalizeToPixel(Vec3(vertices[idx1.v2].x/vertices[idx1.v2].w, vertices[idx1.v2].y/vertices[idx1.v2].w, vertices[idx1.v2].z/vertices[idx1.v2].w));
+
+  Vec3 barycentric = find_barycentric(x, y, ver0, ver1, ver2);
+  return barycentric;
 }
 
 pixelBuff insideTriangle(int x, int y, const Vec3& v0, const Vec3& v1, const Vec3& v2) {
@@ -54,7 +80,7 @@ pixelBuff insideTriangle(int x, int y, const Vec3& v0, const Vec3& v1, const Vec
   return pixel;
 }
 
-void drawTriangle(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 color, int modelInd, int triInd, int i) {
+void drawTriangle(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 color, int modelInd, int triInd) {
 
   Vec3 v0Pixel = normalizeToPixel(v0);
   Vec3 v1Pixel = normalizeToPixel(v1);
@@ -71,22 +97,25 @@ void drawTriangle(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 color, int modelInd, int triIn
       if (currentPixel.draw) {
         
         if (TEXTURE and LIGHTNING) {
-          Color texColor = extractColor(modelInd, triInd, currentPixel.barycentric, x, y, zBuffer[y][x], i);
-          glm::vec3 lightAmount = lightIntensity(modelInd, triInd, currentPixel.barycentric);
+          Vec3 bary = extractBarycentric(modelInd, triInd, x, y);
+          Color texColor = extractColor(modelInd, triInd, bary, zBuffer[y][x]);
+          glm::vec3 lightAmount = lightIntensity(modelInd, triInd, bary);
           framebuffer[y][x][0] = std::min(static_cast<float>(texColor.r)*lightAmount.x, 255.0f);
           framebuffer[y][x][1] = std::min(static_cast<float>(texColor.g)*lightAmount.y, 255.0f);
           framebuffer[y][x][2] = std::min(static_cast<float>(texColor.b)*lightAmount.z, 255.0f);
         }
 
         else if (TEXTURE) {
-          Color texColor = extractColor(modelInd, triInd, currentPixel.barycentric, x, y, zBuffer[y][x], i);
+          Vec3 bary = extractBarycentric(modelInd, triInd, x, y);
+          Color texColor = extractColor(modelInd, triInd, bary, zBuffer[y][x]);
           framebuffer[y][x][0] = std::min(static_cast<float>(texColor.r), 255.0f);
           framebuffer[y][x][1] = std::min(static_cast<float>(texColor.g), 255.0f);
           framebuffer[y][x][2] = std::min(static_cast<float>(texColor.b), 255.0f);
         }
 
         else if (LIGHTNING) {
-          glm::vec3 lightAmount = lightIntensity(modelInd, triInd, currentPixel.barycentric);
+          Vec3 bary = extractBarycentric(modelInd, triInd, x, y);
+          glm::vec3 lightAmount = lightIntensity(modelInd, triInd, bary);
           framebuffer[y][x][0] = std::min(color.x*lightAmount.x, 255.0f);
           framebuffer[y][x][1] = std::min(color.y*lightAmount.y, 255.0f);
           framebuffer[y][x][2] = std::min(color.z*lightAmount.z, 255.0f);
@@ -113,6 +142,6 @@ void savePPM(const std::string& filename) {
 
 void render() {
   zBuffInit();
-  int i = 0;
-  for (VBuff& v : VOA) drawTriangle(v.v0, v.v1, v.v2, v.color, v.modelInd, v.triInd, i); i++;
+  for (VBuff& v : VOA)
+    drawTriangle(v.v0, v.v1, v.v2, v.color, v.modelInd, v.triInd);
 }

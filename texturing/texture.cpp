@@ -4,6 +4,7 @@
 #include "../objLoader/obj_loader.h"
 #include "../shader/shader.h"
 #include "../clip/clip.h"
+#include "../clip/zClip.h"
 #include "texture.h"
 
 const int WIDTH = 600;
@@ -14,19 +15,6 @@ Vec3 normalizeToPixel(const Vec3& screenCoord) {
   float y = (screenCoord.y + 1.0f) * 0.5f * (HEIGHT - 1);  // Maps y from [-1, 1] to [0, HEIGHT-1]
   float z = (screenCoord.z + 1.0f) * 0.5f; // Maps z from [-1, 1] to [0, 1]
   return Vec3(x, y, z);
-}
-
-Vec3 find_barycentric(int x, int y, Vec3 v0, Vec3 v1, Vec3 v2) {
-  float px = x + 0.5f;
-  float py = y + 0.5f;
-  float w0 = 0, w1 = 0, w2 = 0;
-  float area = edgeFunc(v0, v1, v2);
-  if (area != 0) {
-    w0 = edgeFunc(Vec3(px, py, 1.0f), v1, v2)/area;
-    w1 = edgeFunc(Vec3(px, py, 1.0f), v2, v0)/area;
-    w2 = edgeFunc(Vec3(px, py, 1.0f), v0, v1)/area;
-  }
-  return Vec3(w0, w1, w2);
 }
 
 Color bilinear_filtering(int w, int h, float u, float v, std::vector<Color>& texels) {
@@ -66,18 +54,18 @@ Color uv_rounding(int w, int h, float u, float v, std::vector<Color>& texels) {
   return color;
 }
 
-Color extractColor (int modelInd, int triInd, Vec3 barycentric, int x, int y, float z, int i) {
+Color extractColor (int modelInd, int triInd, Vec3 barycentric, float z) {
   Ind idx = (modelTexCordsInd[modelInd]).idx[triInd];
   std::vector<Vec2uv> texCords = (modelTexCords[modelInd]).texcoords;
 
   Ind idx1 = (modelTriangleInd[modelInd]).idx[triInd];
   std::vector<glm::vec4> vertices = (modelsCam[modelInd].vertices);
 
-  Vec3 ver0 = normalizeToPixel(Vec3(vertices[idx1.v0].x/vertices[idx.v0].w, vertices[idx1.v0].y/vertices[idx.v0].w, vertices[idx1.v0].z/vertices[idx.v0].w));
-  Vec3 ver1 = normalizeToPixel(Vec3(vertices[idx1.v1].x/vertices[idx.v1].w, vertices[idx1.v1].y/vertices[idx.v1].w, vertices[idx1.v1].z/vertices[idx.v1].w));
-  Vec3 ver2 = normalizeToPixel(Vec3(vertices[idx1.v2].x/vertices[idx.v2].w, vertices[idx1.v2].y/vertices[idx.v2].w, vertices[idx1.v2].z/vertices[idx.v2].w));
+  Vec3 ver0 = normalizeToPixel(Vec3(vertices[idx1.v0].x/vertices[idx1.v0].w, vertices[idx1.v0].y/vertices[idx1.v0].w, vertices[idx1.v0].z/vertices[idx1.v0].w));
+  Vec3 ver1 = normalizeToPixel(Vec3(vertices[idx1.v1].x/vertices[idx1.v1].w, vertices[idx1.v1].y/vertices[idx1.v1].w, vertices[idx1.v1].z/vertices[idx1.v1].w));
+  Vec3 ver2 = normalizeToPixel(Vec3(vertices[idx1.v2].x/vertices[idx1.v2].w, vertices[idx1.v2].y/vertices[idx1.v2].w, vertices[idx1.v2].z/vertices[idx1.v2].w));
 
-  if (clipStatus[i]) barycentric = find_barycentric(x, y, ver0, ver1, ver2);
+  //barycentric = find_barycentric(x, y, ver0, ver1, ver2);
 
   int w =  modelTexColors[modelInd].width;
   int h = modelTexColors[modelInd].height;
@@ -91,8 +79,6 @@ Color extractColor (int modelInd, int triInd, Vec3 barycentric, int x, int y, fl
 
   u = std::clamp(0.0f, u, 1.0f);
   v = std::clamp(0.0f, v, 1.0f);
-
-  //std::cout << ver0.z << " " << ver1.z << " " << ver2.z << " " << z << "\n";
 
   //Color color = uv_rounding(w, h, u, v, modelTexColors[modelInd].pixels);
   Color color = bilinear_filtering(w, h, u, v, modelTexColors[modelInd].pixels);

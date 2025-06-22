@@ -78,3 +78,4 @@ extern std::vector<modelNormalClass> modelNormals;
 extern std::vector<modelIdx> modelNormInd;
 extern std::vector<glm::vec3> lightSources;
 extern Camera cameraParam;
+extern glm::mat4 transform_matrix;

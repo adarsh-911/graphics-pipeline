@@ -1,25 +1,34 @@
 # Compiler and flags
 CXX := g++
-CXXFLAGS := -g -O0 -std=c++17 -Iclip -Iobj_loader -Ishader -Itexture -Ilightning -Ilocal_test
+CXXFLAGS := -g -O0 -std=c++17 -I. -I./modelLoader -I./objLoader -I./clipping -I./lightning -I./texturing -I./vertexTransform -I./raster
 
-# Source files
-SRC := $(wildcard ./*.cpp clip/*.cpp objLoader/*.cpp shader/*.cpp texturing/*.cpp lightning/*.cpp raster/*.cpp)
+# Project directories
+SRC_DIRS := . modelLoader objLoader clipping lightning texturing vertexTransform raster
 
-OBJ := $(SRC:.cpp=.o)
+# Find all .cpp files in those directories
+SOURCES := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.cpp))
 
-TARGET := out
+# Create object file names by replacing .cpp with .o
+OBJECTS := $(SOURCES:.cpp=.o)
 
+# Final binary name
+TARGET := main
+
+# Default rule
 all: $(TARGET)
 
-$(TARGET): $(OBJ)
+# Linking
+$(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
+# Compile .cpp to .o
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
+# Clean rule
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f $(OBJECTS) $(TARGET)
 
-run: all
-	./$(TARGET)
+# Convenience rule
+.PHONY: all clean
 

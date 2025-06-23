@@ -1,6 +1,6 @@
 make
-./out $1 $2 $3 $4 $5 $6
-rm out
+./main $1 $2 $3 $4 $5 $6
+rm main
 python3 imageConvert.py
 rm output.ppm
 feh output.png

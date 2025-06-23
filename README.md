@@ -19,7 +19,7 @@ feh output.png
 
 ### Features
 
--  **OBJ Loader**: Parses geometry, texture coordinates, and normals from `.obj` files in `models/`.
+-  **OBJ Loader**: Parses geometry, texture coordinates, and normals from `.obj` files in `all_models/`.
 -  **Vertex Shader**: Transforms vertices from model space → world space → camera space → clip space.
 -  **Camera System**: Custom camera transformation with configurable position and orientation.
 -  **Perspective Projection**: Implemented using `glm::perspective`.
@@ -29,7 +29,7 @@ feh output.png
 -  **Z-Buffer test**: Discards the pixel with larger z during overlap.
 -  **Fragment Shader**:
   - Interpolates texture coordinates and normals per-pixel.
-  - Applies Lambertian lighting model.
+  - Applies Phong lighting model.
   - Supports texture mapping using `stb_image`.
 -  **Texture Mapping**: Per-pixel color sampling method from loaded images.
 -  **Image Output**: Final framebuffer is saved as `output.png`.
@@ -37,7 +37,7 @@ feh output.png
 ### Pipeline Overview
 
 1. **Model Loading**
-   - Loads `.obj` files and textures from `models/` directory.
+   - Loads `.obj` files and textures from `all_models/` directory.
    - Vertices, normals, UVs, and face indices are parsed and stored.
 
 2. **Vertex Processing**

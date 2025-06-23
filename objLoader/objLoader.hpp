@@ -1,6 +1,5 @@
 #pragma once
 
-#include "stb_image.h"
 #include <bits/stdc++.h>
 #include <glm/glm.hpp>
 #include <vector>

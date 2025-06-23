@@ -1,5 +1,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "model.hpp"
+#include "stb_image.h"
 
 bool Model::load(const std::string& filename) {
   OBJLoader loader;

@@ -13,16 +13,9 @@ Camera cameraInst;
 
 glm::mat4 WORLD_TO_SCREEN;
 
-const int WIDTH = 600; //400
-const int HEIGHT = 600; //240
-
 template <typename T>
 float signum(T val) {
     return (T(0) < val) - (val < T(0));
-}
-
-void print(glm::vec4 vec) {
-  std::cout << vec.x << " " << vec.y << " " << vec.z << "\n";
 }
 
 glm::vec4 normalizeModel(glm::vec4& v) {
@@ -55,22 +48,6 @@ void transformNormals(Model& model) {
 }
 
 glm::vec4 transformToCamera (glm::vec4 obj_worldSpace, Camera camera) {
-  //Plane near, far;
-  //near.org = glm::vec3(glm::translate(glm::mat4(1.0f), camera.direction * camera.NEAR) * glm::vec4(camera.position, 1.0f));
-  //near.norm = camera.direction;
-
-  //far.org = glm::vec3(glm::translate(glm::mat4(1.0f), camera.direction * camera.FAR) * glm::vec4(camera.position, 1.0f));
-  //far.norm = camera.direction;
-
-  //glm::mat4 trans = glm::translate(glm::mat4(1.0f), glm::vec3(-camera.position.x, -camera.position.y, -camera.position.z));  
-  //glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f), signum(camera.direction.x)*float(acos(-camera.direction.z/sqrt(camera.direction.z*camera.direction.z + camera.direction.x*camera.direction.x))), {0.0f, -1.0f, 0.0f});
-  //glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f), signum(camera.direction.y)*float(acos(-camera.direction.z/sqrt(camera.direction.z*camera.direction.z + camera.direction.y*camera.direction.y))), {1.0f, 0.0f, 0.0f});
-  //glm::vec4 obj_camSpace = (trans * rotateY * rotateX) * obj_worldSpace;
-
-  //glm::mat4 view = glm::lookAt(camera.position, camera.position + camera.direction, glm::vec3(0.0f, 1.0f, 0.0f));
-  //glm::mat4 trans = glm::translate(glm::mat4(1.0f), glm::vec3(-camera.position.x, -camera.position.y, -camera.position.z));
-
-  //glm::mat4 proj = glm::perspective(camera.fovy, (float)WIDTH/HEIGHT, camera.NEAR, camera.FAR);
 
   glm::vec4 obj_proj = WORLD_TO_SCREEN * obj_worldSpace; 
 
@@ -97,9 +74,10 @@ void generateModel (Model model) {
 }
 
 void generateMatrix () {
+  
   glm::mat4 VIEW_MAT = glm::lookAt(cameraInst.position, cameraInst.position + cameraInst.direction, glm::vec3(0.0f, 1.0f, 0.0f));
   glm::mat4 TRANS_MAT = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraInst.position.x, -cameraInst.position.y, -cameraInst.position.z));
-  glm::mat4 PROJ_MAT = glm::perspective(cameraInst.fovy, (float)WIDTH/HEIGHT, cameraInst.NEAR, cameraInst.FAR);
+  glm::mat4 PROJ_MAT = glm::perspective(cameraInst.fovy, (float)(Screen::WIDTH/Screen::HEIGHT), cameraInst.NEAR, cameraInst.FAR);
 
   WORLD_TO_SCREEN = PROJ_MAT * TRANS_MAT *  VIEW_MAT;
 }

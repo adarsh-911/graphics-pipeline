@@ -45,6 +45,7 @@ std::vector<glm::vec3>& Model::getNormals() {
 }
 
 const std::vector<idx>& Model::getIndices(int which) const {
+  static const std::vector<idx> empty;
   switch (which)
   {
   case 1:
@@ -54,7 +55,7 @@ const std::vector<idx>& Model::getIndices(int which) const {
   case 3:
     return this->nIdx; break; 
   default:
-    return {}; break;
+    return empty; break;
   }
 }
 

@@ -79,6 +79,7 @@ const std::vector<glm::vec3>& OBJLoader::getNormals() const {
 }
 
 const std::vector<idx>& OBJLoader::getIndices(int which) const {
+  static const std::vector<idx> empty;
   switch (which)
   {
   case 1:
@@ -88,7 +89,7 @@ const std::vector<idx>& OBJLoader::getIndices(int which) const {
   case 3:
     return this->nIdx; break; 
   default:
-    return {}; break;
+    return empty; break;
   }
 }
 

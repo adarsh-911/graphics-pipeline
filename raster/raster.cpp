@@ -9,18 +9,15 @@
 bool TEXTURE = true;
 bool LIGHTNING = true;
 
-//const int WIDTH = 600;
-//const int HEIGHT = 600;
-
-unsigned char framebuffer[HEIGHT][WIDTH][3] = {};  // initialized to black
-float zBuffer[HEIGHT][WIDTH] = {};
+unsigned char framebuffer[Screen::HEIGHT][Screen::WIDTH][3] = {};  // initialized to black
+float zBuffer[Screen::HEIGHT][Screen::WIDTH] = {};
 
 glm::vec3 persp_tex_z;
 glm::mat4 WORLD_TO_SCREEN_INV;
 
 void zBuffInit() {
-  for (int i = 0; i < HEIGHT; ++i)
-    for (int j = 0; j < WIDTH; ++j)
+  for (int i = 0; i < Screen::HEIGHT; ++i)
+    for (int j = 0; j < Screen::WIDTH; ++j)
         zBuffer[i][j] = INFINITY;
 }
 
@@ -29,8 +26,8 @@ void generateINV() {
 }
 
 glm::vec3 normalizeToPixel(const glm::vec3& screenCoord) {
-  float x = (screenCoord.x + 1.0f) * 0.5f * (WIDTH - 1);   // Maps x from [-1, 1] to [0, WIDTH-1]
-  float y = ((screenCoord.y + 1.0f) * 0.5f) * (HEIGHT - 1);  // Maps y from [-1, 1] to [0, HEIGHT-1]
+  float x = (screenCoord.x + 1.0f) * 0.5f * (Screen::WIDTH - 1);
+  float y = ((screenCoord.y + 1.0f) * 0.5f) * (Screen::HEIGHT - 1);
   float z = (screenCoord.z + 1.0f) * 0.5f;
   return glm::vec3(x, y, z);
 }
@@ -100,9 +97,9 @@ void drawTriangle(glm::vec3& v0, glm::vec3& v1, glm::vec3& v2, Color color, int 
   glm::vec3 v2Pixel = normalizeToPixel(v2);
 
   int minX = std::max(0, (int)std::floor(std::min(std::min(v0Pixel.x, v1Pixel.x), v2Pixel.x)));
-  int maxX = std::min(WIDTH - 1, (int)std::ceil(std::max(std::max(v0Pixel.x, v1Pixel.x), v2Pixel.x)));
+  int maxX = std::min(Screen::WIDTH - 1, (int)std::ceil(std::max(std::max(v0Pixel.x, v1Pixel.x), v2Pixel.x)));
   int minY = std::max(0, (int)std::floor(std::min(std::min(v0Pixel.y, v1Pixel.y), v2Pixel.y)));
-  int maxY = std::min(HEIGHT - 1, (int)std::ceil(std::max(std::max(v0Pixel.y, v1Pixel.y), v2Pixel.y)));
+  int maxY = std::min(Screen::HEIGHT - 1, (int)std::ceil(std::max(std::max(v0Pixel.y, v1Pixel.y), v2Pixel.y)));
 
   for (int y = minY; y <= maxY; ++y) {
     for (int x = minX; x <= maxX; ++x) {
@@ -147,9 +144,9 @@ void drawTriangle(glm::vec3& v0, glm::vec3& v1, glm::vec3& v2, Color color, int 
 
 void savePPM(const std::string& filename) {
   std::ofstream ofs(filename, std::ios::binary);
-  ofs << "P6\n" << WIDTH << " " << HEIGHT << "\n255\n";
-  for (int y = 0; y < HEIGHT; ++y)
-    for (int x = 0; x < WIDTH; ++x)
+  ofs << "P6\n" << Screen::WIDTH << " " << Screen::HEIGHT << "\n255\n";
+  for (int y = 0; y < Screen::HEIGHT; ++y)
+    for (int x = 0; x < Screen::WIDTH; ++x)
       ofs.write((char*)framebuffer[y][x], 3);
 }
 

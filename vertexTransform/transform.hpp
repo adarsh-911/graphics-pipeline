@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../modelLoader/model.hpp"
+#include "../screen.hpp"
 
 class Camera {
   public:
@@ -29,5 +30,6 @@ void cameraInputs (Camera camera);
 extern std::vector<modelBuff> worldSpace;
 extern std::vector<modelBuff> cameraSpace;
 extern std::vector<glm::vec3> lightSources;
+
 extern Camera cameraInst;
 extern glm::mat4 WORLD_TO_SCREEN;

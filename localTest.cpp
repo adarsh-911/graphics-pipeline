@@ -2,6 +2,7 @@
 #include "vertexTransform/transform.hpp"
 #include "clipping/clip.hpp"
 #include "raster/raster.hpp"
+#include "screen.hpp"
 
 void run_localTest(char* argv[]) {
 
@@ -11,7 +12,7 @@ void run_localTest(char* argv[]) {
   Camera camera;
   camera.position = pos;
   camera.direction = glm::normalize(dir);
-
+  
   loadModels();
   generateWorld();
   cameraInputs(camera);

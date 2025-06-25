@@ -1,5 +1,6 @@
 #include "../modelLoader/loadModels.hpp"
 #include "clip.hpp"
+#include "../vertexTransform/transformScreen.hpp"
 
 std::vector<VBuff> VOA;
 
@@ -253,18 +254,10 @@ void clipTriangle (const glm::vec4& v0, const glm::vec4& v1, const glm::vec4& v2
 }
 
 void clip() {
-  for (const modelBuff& transModel : cameraSpace) {
-    for (const Model& model : models) {
-      if (model.name == transModel.name) {
-        int triangleIdx = 0;
-        for (const idx& triIdx : model.getIndices(1)) {
-          glm::vec4 ver1 = transModel.vertices[triIdx.a];
-          glm::vec4 ver2 = transModel.vertices[triIdx.b];
-          glm::vec4 ver3 = transModel.vertices[triIdx.c];
-          clipTriangle(ver1, ver2, ver3, transModel.color, transModel.idx, triangleIdx);
-          triangleIdx++;
-        }
-      }
-    }
+  for(ZBuff& v : screenSpace) {
+    //glm::vec4 v0 = WORLD_TO_SCREEN * v.v0;
+    //glm::vec4 v1 = WORLD_TO_SCREEN * v.v1;
+    //glm::vec4 v2 = WORLD_TO_SCREEN * v.v2;
+    clipTriangle(v.v0, v.v1, v.v2, v.color, v.modelIdx, v.triIdx);
   }
 }

@@ -32,4 +32,5 @@ extern std::vector<modelBuff> cameraSpace;
 extern std::vector<glm::vec3> lightSources;
 
 extern Camera cameraInst;
+extern Plane near, far;
 extern glm::mat4 WORLD_TO_SCREEN;

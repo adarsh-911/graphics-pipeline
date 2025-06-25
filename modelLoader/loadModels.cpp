@@ -33,7 +33,7 @@ int loadModels() {
 
         if (name == "light") {
           modelInst.light = true;
-          modelInst.position = {0.0f, -5.0f, -4.0f};
+          modelInst.position = {0.0f, -5.0f, 12.0f};
           modelInst.angle = glm::radians(90.0f);
           modelInst.axis = {1.0f, 0.0f, 0.0f};
           modelInst.scaleFactor = 0.25;
@@ -43,7 +43,7 @@ int loadModels() {
         }
         if (name == "wall") {
           modelInst.light = false;
-          modelInst.position = {0.0f, 0.0f, -15.0f};
+          modelInst.position = {0.0f, 0.0f, 1.0f};
           modelInst.angle = glm::radians(0.0f);
           modelInst.axis = {1.0f, 0.0f, 0.0f};
           modelInst.scaleFactor = 8.0;
@@ -53,7 +53,7 @@ int loadModels() {
         }
         if (name == "wall1") {
           modelInst.light = false;
-          modelInst.position = {-8.0f, 0.0f, -7.0f};
+          modelInst.position = {-8.0f, 0.0f, 9.0f};
           modelInst.angle = glm::radians(90.0f);
           modelInst.axis = {0.0f, 1.0f, 0.0f};
           modelInst.scaleFactor = 8.0;
@@ -63,7 +63,7 @@ int loadModels() {
         }
         if (name == "wall2") {
           modelInst.light = false;
-          modelInst.position = {8.0f, 0.0f, -7.0f};
+          modelInst.position = {8.0f, 0.0f, 9.0f};
           modelInst.angle = glm::radians(90.0f);
           modelInst.axis = {0.0f, -1.0f, 0.0f};
           modelInst.scaleFactor = 8.0;
@@ -73,7 +73,7 @@ int loadModels() {
         }
         if (name == "floor") {
           modelInst.light = false;
-          modelInst.position = {0.0f, 8.0f, -7.0f};
+          modelInst.position = {0.0f, 8.0f, 9.0f};
           modelInst.angle = glm::radians(90.0f);
           modelInst.axis = {1.0f, 0.0f, 0.0f};
           modelInst.scaleFactor = 8.0;
@@ -83,7 +83,7 @@ int loadModels() {
         }
         if (name == "roof") {
           modelInst.light = false;
-          modelInst.position = {0.0f, -8.0f, -7.0f};
+          modelInst.position = {0.0f, -8.0f, 9.0f};
           modelInst.angle = glm::radians(90.0f);
           modelInst.axis = {-1.0f, 0.0f, 0.0f};
           modelInst.scaleFactor = 8.0;
@@ -93,7 +93,7 @@ int loadModels() {
         }
         if (name == "card") {
           modelInst.light = false;
-          modelInst.position = {0.0f, 0.0f, -14.93f};
+          modelInst.position = {0.0f, 0.0f, 1.07f};
           modelInst.angle = glm::radians(0.0f);
           modelInst.axis = {0.0f, 1.0f, 0.0f};
           modelInst.scaleFactor = 7.0;
@@ -103,7 +103,7 @@ int loadModels() {
         }
         if (name == "box") {
           modelInst.light = false;
-          modelInst.position = {0.0f, -2.0f, -3.0f};
+          modelInst.position = {0.0f, -2.0f, 13.0f};
           modelInst.angle = glm::radians(30.0f);
           modelInst.axis = {1.0f, 0.0f, 0.0f};
           modelInst.scaleFactor = 1.5;
@@ -113,7 +113,7 @@ int loadModels() {
         }
         if (name == "table") {
           modelInst.light = false;
-          modelInst.position = {0.0f, 7.0f, -3.0f};
+          modelInst.position = {0.0f, 7.0f, 13.0f};
           modelInst.angle = glm::radians(90.0f);
           modelInst.axis = {1.0f, 0.0f, 0.0f};
           modelInst.scaleFactor = 6.5;
@@ -123,7 +123,7 @@ int loadModels() {
         }
         if (name == "chair") {
           modelInst.light = false;
-          modelInst.position = {0.0f, 6.0f, -2.0f};
+          modelInst.position = {0.0f, 6.0f, 14.0f};
           modelInst.angle = glm::radians(180.0f);
           modelInst.axis = {0.0f, 0.0f, 1.0f};
           modelInst.scaleFactor = 1.5;
@@ -133,7 +133,7 @@ int loadModels() {
         }
         if (name == "pyramid") {
           modelInst.light = false;
-          modelInst.position = {0.0f, 3.0f, -0.5f};
+          modelInst.position = {0.0f, 3.0f, 15.5f};
           modelInst.angle = glm::radians(180.0f);
           modelInst.axis = {0.0f, 0.0f, 1.0f};
           modelInst.scaleFactor = 1.0;

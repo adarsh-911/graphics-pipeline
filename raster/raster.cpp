@@ -153,5 +153,6 @@ void savePPM(const std::string& filename) {
 void render() {
   zBuffInit();
   if (LIGHTNING) generateINV();
+
   for (VBuff& v : VOA) drawTriangle(v.v0, v.v1, v.v2, v.color, v.modelIdx, v.triIdx);
 }

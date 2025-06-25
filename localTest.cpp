@@ -1,6 +1,8 @@
 #include "modelLoader/loadModels.hpp"
 #include "vertexTransform/transform.hpp"
 #include "clipping/clip.hpp"
+#include "clipping/zClip.hpp"
+#include "vertexTransform/transformScreen.hpp"
 #include "raster/raster.hpp"
 #include "screen.hpp"
 
@@ -16,6 +18,8 @@ void run_localTest(char* argv[]) {
   loadModels();
   generateWorld();
   cameraInputs(camera);
+  zClip(false);
+  transformToScreen();
   clip();
   render();
   

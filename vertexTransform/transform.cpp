@@ -10,6 +10,7 @@ std::vector<modelBuff> cameraSpace;
 std::vector<glm::vec3> lightSources;
 
 Camera cameraInst;
+Plane near, far;
 
 glm::mat4 WORLD_TO_SCREEN;
 
@@ -48,6 +49,11 @@ void transformNormals(Model& model) {
 }
 
 glm::vec4 transformToCamera (glm::vec4 obj_worldSpace, Camera camera) {
+  near.org = glm::vec4(glm::translate(glm::mat4(1.0f), camera.direction * camera.NEAR) * glm::vec4(camera.position, 1.0f));
+  near.norm = camera.direction;
+
+  far.org = glm::vec4(glm::translate(glm::mat4(1.0f), camera.direction * camera.FAR) * glm::vec4(camera.position, 1.0f));
+  far.norm = camera.direction;
 
   glm::vec4 obj_proj = WORLD_TO_SCREEN * obj_worldSpace; 
 
@@ -76,9 +82,11 @@ void generateModel (Model model) {
 void generateMatrix () {
   
   glm::mat4 VIEW_MAT = glm::lookAt(cameraInst.position, cameraInst.position + cameraInst.direction, glm::vec3(0.0f, 1.0f, 0.0f));
-  glm::mat4 TRANS_MAT = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraInst.position.x, -cameraInst.position.y, -cameraInst.position.z));
+  //glm::mat4 TRANS_MAT = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraInst.position.x, -cameraInst.position.y, -cameraInst.position.z));
+  glm::mat4 TRANS_MAT(1.0f);
   glm::mat4 PROJ_MAT = glm::perspective(cameraInst.fovy, (float)(Screen::WIDTH/Screen::HEIGHT), cameraInst.NEAR, cameraInst.FAR);
 
+  glm::mat4 WORLD_TO_CAM = TRANS_MAT * VIEW_MAT;
   WORLD_TO_SCREEN = PROJ_MAT * TRANS_MAT *  VIEW_MAT;
 }
 

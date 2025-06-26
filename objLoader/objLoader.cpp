@@ -3,11 +3,13 @@
 #include <sstream>
 #include <iostream>
 
+
 bool OBJLoader::load(const std::string& filename) {
   this->vertices.clear();
   this->texCoords.clear();
   this->normals.clear();
-
+  int id = 0;
+  bool init = false;
 
   std::ifstream file(filename);
   if (!file.is_open()) {
@@ -61,7 +63,15 @@ bool OBJLoader::load(const std::string& filename) {
           this->pIdx.push_back(idx);
           this->tIdx.push_back(idx1);
           this->nIdx.push_back(idx2);
+          this->texID.push_back(id);
+
+      } else if (prefix == "g") {
+          if (line != "g off") {
+            if (init) id++;
+            else init = true; 
+          }
       }
+
   }
   return true;
 }
@@ -93,3 +103,6 @@ const std::vector<idx>& OBJLoader::getIndices(int which) const {
   }
 }
 
+const std::vector<int>& OBJLoader::getTexID() const {
+  return this->texID;
+}

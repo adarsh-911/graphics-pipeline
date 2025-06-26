@@ -7,12 +7,15 @@
 
 std::vector<modelBuff> worldSpace;
 std::vector<modelBuff> cameraSpace;
+std::vector<modelBuff> screenSpace;
 std::vector<glm::vec3> lightSources;
 
 Camera cameraInst;
 Plane near, far;
 
 glm::mat4 WORLD_TO_SCREEN;
+glm::mat4 WORLD_TO_CAM;
+glm::mat4 CAM_TO_SCREEN;
 
 template <typename T>
 float signum(T val) {
@@ -49,13 +52,15 @@ void transformNormals(Model& model) {
 }
 
 glm::vec4 transformToCamera (glm::vec4 obj_worldSpace, Camera camera) {
-  near.org = glm::vec4(glm::translate(glm::mat4(1.0f), camera.direction * camera.NEAR) * glm::vec4(camera.position, 1.0f));
-  near.norm = camera.direction;
 
-  far.org = glm::vec4(glm::translate(glm::mat4(1.0f), camera.direction * camera.FAR) * glm::vec4(camera.position, 1.0f));
-  far.norm = camera.direction;
+  glm::vec4 obj_cam = WORLD_TO_CAM * obj_worldSpace; 
 
-  glm::vec4 obj_proj = WORLD_TO_SCREEN * obj_worldSpace; 
+  return obj_cam;
+}
+
+glm::vec4 transformToScreen (glm::vec4 obj_worldSpace, Camera camera) {
+
+  glm::vec4 obj_proj = WORLD_TO_SCREEN * obj_worldSpace;
 
   return glm::vec4(obj_proj.x, obj_proj.y, obj_proj.z, obj_proj.w);
 }
@@ -79,6 +84,16 @@ void generateModel (Model model) {
   if (model.light) lightSources.push_back(sum/static_cast<float>(modelInst.vertices.size()));
 }
 
+void calculateClipPlanes(Camera camera) {
+  glm::vec4 nearplane = glm::vec4(glm::translate(glm::mat4(1.0f), camera.direction * camera.NEAR) * glm::vec4(camera.position, 1.0f));
+  near.org = WORLD_TO_CAM * nearplane;
+  near.norm = camera.direction;
+
+  glm::vec4 farplane = glm::vec4(glm::translate(glm::mat4(1.0f), camera.direction * camera.FAR) * glm::vec4(camera.position, 1.0f));
+  far.org = WORLD_TO_CAM * farplane;
+  far.norm = camera.direction;
+}
+
 void generateMatrix () {
   
   glm::mat4 VIEW_MAT = glm::lookAt(cameraInst.position, cameraInst.position + cameraInst.direction, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -86,7 +101,8 @@ void generateMatrix () {
   glm::mat4 TRANS_MAT(1.0f);
   glm::mat4 PROJ_MAT = glm::perspective(cameraInst.fovy, (float)(Screen::WIDTH/Screen::HEIGHT), cameraInst.NEAR, cameraInst.FAR);
 
-  glm::mat4 WORLD_TO_CAM = TRANS_MAT * VIEW_MAT;
+  WORLD_TO_CAM = TRANS_MAT * VIEW_MAT;
+  CAM_TO_SCREEN = PROJ_MAT;
   WORLD_TO_SCREEN = PROJ_MAT * TRANS_MAT *  VIEW_MAT;
 }
 
@@ -95,19 +111,27 @@ void cameraInputs (Camera camera) {
   cameraInst.direction = camera.direction;
 
   generateMatrix();
-
+  calculateClipPlanes(camera);
+  
   for (const modelBuff& modelWorldspace : worldSpace) {
     modelBuff modelInst;
+    modelBuff modelInst2;
     for (const glm::vec4& vertex : modelWorldspace.vertices) {
-      glm::vec4 transVertex = transformToCamera(vertex, camera);
+      glm::vec4 transVertexCam = transformToCamera(vertex, camera);
+      glm::vec4 transVertex = transformToScreen(vertex, camera);
       modelInst.vertices.push_back(transVertex);
-      
+      modelInst2.vertices.push_back(transVertexCam);
     }
     modelInst.name = modelWorldspace.name;
     modelInst.color = modelWorldspace.color;
     modelInst.idx = modelWorldspace.idx;
-    cameraSpace.push_back(modelInst);
-  }
+    screenSpace.push_back(modelInst);
+
+    modelInst2.name = modelWorldspace.name;
+    modelInst2.color = modelWorldspace.color;
+    modelInst2.idx = modelWorldspace.idx;
+    cameraSpace.push_back(modelInst2);
+  } 
 }
 
 void generateWorld() {

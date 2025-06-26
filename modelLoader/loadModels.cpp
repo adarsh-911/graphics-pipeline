@@ -3,6 +3,7 @@
 std::vector<Model> models;
 
 int loadModels() {
+  std::vector<fs::path> tex_paths;
   std::string pwd = fs::current_path().string();
   std::string models_path = pwd + "/all_models";
 
@@ -10,30 +11,42 @@ int loadModels() {
     if (!dir_entry.is_directory())
         continue;
 
-    fs::path obj_path, tex_path;
+    fs::path obj_path;
+    tex_paths.clear();
 
-    for (const auto& file : fs::directory_iterator(dir_entry.path())) {
+    for (const auto& file : fs::recursive_directory_iterator(dir_entry.path())) {
       if (file.is_regular_file()) {
         fs::path path = file.path();
         std::string ext = path.extension().string();
 
-        if (ext == ".obj") obj_path = path;
-        if (ext == ".jpg" or ext == ".png") tex_path = path;
+        if (ext == ".obj") {
+          obj_path = path;
+        } else if (ext == ".jpg" || ext == ".png" || ext == ".jpeg") {
+          tex_paths.push_back(path);
+        }
       }
     }
-    if (!obj_path.empty() && !tex_path.empty() &&
-      obj_path.stem() == tex_path.stem()) {
+    std::sort(tex_paths.begin(), tex_paths.end(),[](const fs::path& a, const fs::path& b) {
+        return a.filename().string() < b.filename().string();
+    });
+
+    if (!obj_path.empty() && !tex_paths.empty()) {
 
       Model modelInst;
       if (!modelInst.load(obj_path)) return 1;
       else {
         std::string name = obj_path.stem().string();
         modelInst.name = name;
-        modelInst.loadTexture(tex_path.string().c_str(), modelInst.texWidth, modelInst.texHeight);
+        int width, height;
+        for (int i = 0 ; i < tex_paths.size() ; i++) {
+          modelInst.loadTexture(tex_paths[i].string().c_str(), width, height);
+          modelInst.texWidth.push_back(width);
+          modelInst.texHeight.push_back(height);
+        }
 
         if (name == "light") {
           modelInst.light = true;
-          modelInst.position = {0.0f, -5.0f, 12.0f};
+          modelInst.position = {0.0f, -5.0f, 10.0f};
           modelInst.angle = glm::radians(90.0f);
           modelInst.axis = {1.0f, 0.0f, 0.0f};
           modelInst.scaleFactor = 0.25;
@@ -57,7 +70,7 @@ int loadModels() {
           modelInst.angle = glm::radians(90.0f);
           modelInst.axis = {0.0f, 1.0f, 0.0f};
           modelInst.scaleFactor = 8.0;
-          modelInst.color = {150, 130, 50};
+          modelInst.color = {190, 10, 50};
 
           models.push_back(modelInst);
         }
@@ -67,7 +80,7 @@ int loadModels() {
           modelInst.angle = glm::radians(90.0f);
           modelInst.axis = {0.0f, -1.0f, 0.0f};
           modelInst.scaleFactor = 8.0;
-          modelInst.color = {150, 130, 50};
+          modelInst.color = {110, 30, 250};
 
           models.push_back(modelInst);
         }
@@ -77,7 +90,7 @@ int loadModels() {
           modelInst.angle = glm::radians(90.0f);
           modelInst.axis = {1.0f, 0.0f, 0.0f};
           modelInst.scaleFactor = 8.0;
-          modelInst.color = {150, 130, 50};
+          modelInst.color = {190, 40, 210};
 
           models.push_back(modelInst);
         }
@@ -87,7 +100,7 @@ int loadModels() {
           modelInst.angle = glm::radians(90.0f);
           modelInst.axis = {-1.0f, 0.0f, 0.0f};
           modelInst.scaleFactor = 8.0;
-          modelInst.color = {150, 130, 50};
+          modelInst.color = {100, 230, 50};
 
           models.push_back(modelInst);
         }
@@ -97,7 +110,7 @@ int loadModels() {
           modelInst.angle = glm::radians(0.0f);
           modelInst.axis = {0.0f, 1.0f, 0.0f};
           modelInst.scaleFactor = 7.0;
-          modelInst.color = {150, 130, 50};
+          modelInst.color = {15, 30, 50};
 
           models.push_back(modelInst);
         }
@@ -134,6 +147,16 @@ int loadModels() {
         if (name == "pyramid") {
           modelInst.light = false;
           modelInst.position = {0.0f, 3.0f, 15.5f};
+          modelInst.angle = glm::radians(180.0f);
+          modelInst.axis = {0.0f, 0.0f, 1.0f};
+          modelInst.scaleFactor = 1.0;
+          modelInst.color = {200, 124, 70};
+
+          //models.push_back(modelInst);
+        }
+        if (name == "basement") {
+          modelInst.light = false;
+          modelInst.position = {0.0f, 0.0f, 100.0f};
           modelInst.angle = glm::radians(180.0f);
           modelInst.axis = {0.0f, 0.0f, 1.0f};
           modelInst.scaleFactor = 1.0;

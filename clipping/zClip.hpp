@@ -23,5 +23,4 @@ struct zlineClip {
 };
 
 void zClip(bool bypass);
-void printv(glm::vec4 v0, glm::vec4 v1, glm::vec4 v2);
 extern std::vector<ZBuff> zclipSpace;

@@ -12,13 +12,20 @@ float constant = 1.0;
 float linear = 0.05;
 float quadratic = 0.005;
 
-float RANGE = 18.0f;
+float RANGE = 16.0f;
 
 glm::vec3 reflect (const glm::vec3& I, const glm::vec3& N) {
     return I - 2.0f * glm::dot(I, N) * N;
 }
 
+bool floatZero (float x) {
+  if (std::abs(x) < 1e-6) return true;
+  else return false;
+}
+
 glm::vec3 lightIntensity (int modelIdx, int triIdx, glm::vec3& barycentric, glm::mat4& INV) {
+
+  if (std::isnan(barycentric.x)) return LIGHTCOLOR * AMBIENT_STRENGTH;
   glm::vec3 total(0.0f);
 
   if (lightSources.size() != 0) {
@@ -26,13 +33,13 @@ glm::vec3 lightIntensity (int modelIdx, int triIdx, glm::vec3& barycentric, glm:
     Model* model = models.data();
     idx idx1 = model[modelIdx].getIndices(1)[triIdx];
 
-    glm::vec4 ver0(cameraSpace[modelIdx].vertices[idx1.a]);
-    glm::vec4 ver1(cameraSpace[modelIdx].vertices[idx1.b]);
-    glm::vec4 ver2(cameraSpace[modelIdx].vertices[idx1.c]);
+    glm::vec4 ver0(screenSpace[modelIdx].vertices[idx1.a]);
+    glm::vec4 ver1(screenSpace[modelIdx].vertices[idx1.b]);
+    glm::vec4 ver2(screenSpace[modelIdx].vertices[idx1.c]);
 
     float x_proj = (ver0.x/ver0.w)*barycentric.x + (ver1.x/ver1.w)*barycentric.y + (ver2.x/ver2.w)*barycentric.z;
     float y_proj = (ver0.y/ver0.w)*barycentric.x + (ver1.y/ver1.w)*barycentric.y + (ver2.y/ver2.w)*barycentric.z;
-    float z_proj = 1 / ((ver0.w/ver0.z)*barycentric.x + (ver1.w/ver1.z)*barycentric.y + (ver2.w/ver2.z)*barycentric.z);
+    float z_proj = ((ver0.z/ver0.w)*barycentric.x + (ver1.z/ver1.w)*barycentric.y + (ver2.z/ver2.w)*barycentric.z);
     float w_proj = 1 / ((1/ver0.w)*barycentric.x + (1/ver1.w)*barycentric.y + (1/ver2.w)*barycentric.z);
 
     glm::vec4 world_vertex = INV * glm::vec4(x_proj*w_proj, y_proj*w_proj, z_proj*w_proj, w_proj);

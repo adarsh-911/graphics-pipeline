@@ -38,25 +38,26 @@ Color uv_rounding(int w, int h, float u, float v, const std::vector<Color>& texe
   return color;
 }
 
-Color extractColor (int modelIdx, int triIdx, glm::vec3 barycentric, glm::vec3 persp_z, float z) {
+Color extractColor (int modelIdx, int triIdx, glm::vec3 barycentric, glm::vec3 persp_w, float z) {
   idx idx1 = (models[modelIdx]).getIndices(2)[triIdx];
   std::vector<glm::vec2> texCoords = (models[modelIdx]).getTexCoords();
 
-  int w =  models[modelIdx].texWidth;
-  int h = models[modelIdx].texHeight;
+  int w =  models[modelIdx].texWidth[models[modelIdx].getTexID(triIdx)];
+  int h = models[modelIdx].texHeight[models[modelIdx].getTexID(triIdx)];
 
   glm::vec2 v0 = texCoords[idx1.a];
   glm::vec2 v1 = texCoords[idx1.b];
   glm::vec2 v2 = texCoords[idx1.c];
 
-  float u = (barycentric.x*v0.x/persp_z.x + barycentric.y*v1.x/persp_z.y + barycentric.z*v2.x/persp_z.z)*z;
-  float v = (barycentric.x*v0.y/persp_z.x + barycentric.y*v1.y/persp_z.y + barycentric.z*v2.y/persp_z.z)*z;
+  float w_intp = (barycentric.x/persp_w.x + barycentric.y/persp_w.y + barycentric.z/persp_w.z);
+  float u = (barycentric.x*v0.x/persp_w.x + barycentric.y*v1.x/persp_w.y + barycentric.z*v2.x/persp_w.z)/w_intp;
+  float v = (barycentric.x*v0.y/persp_w.x + barycentric.y*v1.y/persp_w.y + barycentric.z*v2.y/persp_w.z)/w_intp;
 
   u = std::clamp(0.0f, u, 1.0f);
   v = std::clamp(0.0f, v, 1.0f);
-
-  Color color = uv_rounding(w, h, u, v, models[modelIdx].getTexColors());
-  //Color color = bilinear_filtering(w, h, u, v, models[modelIdx].getTexColors());
+  
+  //Color color = uv_rounding(w, h, u, v, models[modelIdx].getTexColors(models[modelIdx].getTexID(triIdx)));
+  Color color = bilinear_filtering(w, h, u, v, models[modelIdx].getTexColors(models[modelIdx].getTexID(triIdx)));
   
   return color;
 }

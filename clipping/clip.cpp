@@ -88,6 +88,8 @@ void clipTriangle (const glm::vec4& v0, const glm::vec4& v1, const glm::vec4& v2
   glm::vec3 v1_ndc = {v1.x/v1.w, v1.y/v1.w, v1.z/v1.w};
   glm::vec3 v2_ndc = {v2.x/v2.w, v2.y/v2.w, v2.z/v2.w};
 
+  //printv(v0_ndc, v1_ndc, v2_ndc);
+
   int check = (int)clip1.status + (int)clip2.status + (int)clip3.status;
 
   if (check == 0) {
@@ -254,7 +256,7 @@ void clipTriangle (const glm::vec4& v0, const glm::vec4& v1, const glm::vec4& v2
 }
 
 void clip() {
-  for(ZBuff& v : screenSpace) {
+  for(ZBuff& v : screenSpace_zclip) {
     //glm::vec4 v0 = WORLD_TO_SCREEN * v.v0;
     //glm::vec4 v1 = WORLD_TO_SCREEN * v.v1;
     //glm::vec4 v2 = WORLD_TO_SCREEN * v.v2;

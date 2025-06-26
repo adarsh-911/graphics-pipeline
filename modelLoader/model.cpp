@@ -12,22 +12,25 @@ bool Model::load(const std::string& filename) {
     this->pIdx = loader.getIndices(1);
     this->tIdx = loader.getIndices(2);
     this->nIdx = loader.getIndices(3);
+    this->texID = loader.getTexID();
   }
   return true;
 }
 
 void Model::loadTexture (const char* filename, int& width, int& height) {
   int channels;
+  std::vector<Color> texels;
   unsigned char* data = stbi_load(filename, &width, &height, &channels, 3); // force RGB
   if (!data) {
     std::cerr << "Failed to load image: " << filename << "\n";
     return;
   }
-  this->pixels.reserve(width * height);
+  texels.reserve(width * height);
   for (int i = 0; i < width * height * 3; i += 3) {
     Color c = { data[i], data[i + 1], data[i + 2] };
-    this->pixels.push_back(c);
+    texels.push_back(c);
   }
+  this->pixels.push_back(texels);
   stbi_image_free(data);
   
   return;
@@ -60,6 +63,10 @@ const std::vector<idx>& Model::getIndices(int which) const {
   }
 }
 
-const std::vector<Color>& Model::getTexColors() const {
-  return this->pixels;
+const std::vector<Color>& Model::getTexColors(int x) const {
+  return this->pixels[x];
+}
+
+const int Model::getTexID(int x) const {
+  return this->texID[x];
 }

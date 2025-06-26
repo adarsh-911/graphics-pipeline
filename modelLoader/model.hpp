@@ -6,7 +6,7 @@ class Model {
   public:
     std::string name;
     bool light;
-    int texWidth, texHeight;
+    std::vector<int> texWidth, texHeight;
 
     glm::vec3 position;
     glm::vec3 axis;
@@ -23,7 +23,8 @@ class Model {
     std::vector<glm::vec3>& getNormals();
 
     const std::vector<idx>& getIndices(int which) const;
-    const std::vector<Color>& getTexColors() const;
+    const std::vector<Color>& getTexColors(int x) const;
+    const int getTexID(int x) const;
     std::vector<glm::vec3> normals;
   
   private:
@@ -33,6 +34,7 @@ class Model {
     std::vector<idx> pIdx;
     std::vector<idx> tIdx;
     std::vector<idx> nIdx;
+    std::vector<int> texID;
 
-    std::vector<Color> pixels;
+    std::vector<std::vector<Color>> pixels;
 };

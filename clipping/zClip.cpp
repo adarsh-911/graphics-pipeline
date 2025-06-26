@@ -22,12 +22,12 @@ zlineClip liang_barsky_z_plane (const glm::vec4& ver0, const glm::vec4& ver1) {
   glm::vec3 d = p1 - p0;
 
   if (near.org.z < far.org.z) {
-    Zmin = near.org.z - 0.0f;
+    Zmin = near.org.z;
     Zmax = far.org.z;
   }
   else {
     Zmin = far.org.z;
-    Zmax = near.org.z + 0.0f;
+    Zmax = near.org.z;
   }
 
   if (checkInside(ver0) && checkInside(ver1)) {
@@ -101,6 +101,8 @@ void clipTriangle_z_plane (const glm::vec4& v0, const glm::vec4& v1, const glm::
       if (!clip2.out) {
         zclipSpace.push_back(ZBuff(v1, v2, clip1.v1, color, modelIdx, triIdx));
         zclipSpace.push_back(ZBuff(v2, clip1.v1, clip3.v2, color, modelIdx, triIdx));
+        //printv(v1, v2, clip1.v1);
+        //printv(v2, clip1.v1, clip3.v2);
       }
       else {
         if (checkInside(v0)) zclipSpace.push_back(ZBuff(v0, clip1.v2, clip3.v1, color, modelIdx, triIdx));
@@ -146,7 +148,7 @@ void clipTriangle_z_plane (const glm::vec4& v0, const glm::vec4& v1, const glm::
 }
 
 void zClip(bool bypass) {
-  for (const modelBuff& transModel : worldSpace) {
+  for (const modelBuff& transModel : cameraSpace) {
     for (const Model& model : models) {
       if (model.name == transModel.name) {
         int triangleIdx = 0;

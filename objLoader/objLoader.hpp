@@ -21,7 +21,7 @@ class OBJLoader {
     const std::vector<glm::vec3>& getNormals() const;
 
     const std::vector<idx>& getIndices(int which) const;
-    const std::vector<Color>& getTexColors() const;
+    const std::vector<int>& getTexID() const;
 
   private:
     std::vector<glm::vec3> vertices;
@@ -31,5 +31,5 @@ class OBJLoader {
     std::vector<idx> pIdx;
     std::vector<idx> tIdx;
     std::vector<idx> nIdx;
-
+    std::vector<int> texID;
 };

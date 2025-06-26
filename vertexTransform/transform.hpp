@@ -29,8 +29,11 @@ void generateWorld();
 void cameraInputs (Camera camera);
 extern std::vector<modelBuff> worldSpace;
 extern std::vector<modelBuff> cameraSpace;
+extern std::vector<modelBuff> screenSpace;
 extern std::vector<glm::vec3> lightSources;
 
 extern Camera cameraInst;
 extern Plane near, far;
 extern glm::mat4 WORLD_TO_SCREEN;
+extern glm::mat4 WORLD_TO_CAM;
+extern glm::mat4 CAM_TO_SCREEN;

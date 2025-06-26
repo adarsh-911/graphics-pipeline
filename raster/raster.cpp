@@ -12,7 +12,10 @@ bool LIGHTNING = true;
 unsigned char framebuffer[Screen::HEIGHT][Screen::WIDTH][3] = {};  // initialized to black
 float zBuffer[Screen::HEIGHT][Screen::WIDTH] = {};
 
-glm::vec3 persp_tex_z;
+float xMid = 2.0/Screen::WIDTH;
+float yMid = 2.0/Screen::HEIGHT;
+
+glm::vec3 persp_tex_w;
 glm::mat4 WORLD_TO_SCREEN_INV;
 
 void zBuffInit() {
@@ -33,9 +36,10 @@ glm::vec3 normalizeToPixel(const glm::vec3& screenCoord) {
 }
 
 glm::vec3 find_barycentric (int x, int y, glm::vec3& v0, glm::vec3& v1, glm::vec3& v2) {
-  float px = x + 0.5f;
-  float py = y + 0.5f;
+  float px = x + xMid;
+  float py = y + yMid;
   float w0 = 0, w1 = 0, w2 = 0;
+  glm::vec3 n = glm::cross(v1 - v0, v2 - v0);
   float area = edgeFunc(v0, v1, v2);
   if (area != 0) {
     w0 = edgeFunc(glm::vec3(px, py, 1.0f), v1, v2)/area;
@@ -47,20 +51,20 @@ glm::vec3 find_barycentric (int x, int y, glm::vec3& v0, glm::vec3& v1, glm::vec
 
 glm::vec3 extractBarycentric(int modelIdx, int triIdx, float x, float y) {
   idx idx1 = (models[modelIdx]).getIndices(1)[triIdx];
-  glm::vec4* vertices = (cameraSpace[modelIdx].vertices).data();
+  glm::vec4* vertices = (screenSpace[modelIdx].vertices).data();
 
   glm::vec3 ver0 = normalizeToPixel(glm::vec3(vertices[idx1.a].x/vertices[idx1.a].w, vertices[idx1.a].y/vertices[idx1.a].w, vertices[idx1.a].z/vertices[idx1.a].w));
   glm::vec3 ver1 = normalizeToPixel(glm::vec3(vertices[idx1.b].x/vertices[idx1.b].w, vertices[idx1.b].y/vertices[idx1.b].w, vertices[idx1.b].z/vertices[idx1.b].w));
   glm::vec3 ver2 = normalizeToPixel(glm::vec3(vertices[idx1.c].x/vertices[idx1.c].w, vertices[idx1.c].y/vertices[idx1.c].w, vertices[idx1.c].z/vertices[idx1.c].w));
 
   glm::vec3 barycentric = find_barycentric(x, y, ver0, ver1, ver2);
-  persp_tex_z = glm::vec3(ver0.z, ver1.z, ver2.z);
+  persp_tex_w = glm::vec3(vertices[idx1.a].w, vertices[idx1.b].w, vertices[idx1.c].w);
   return barycentric;
 }
 
 pixelBuff insideTriangle(int x, int y, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2) {
-  float px = x + 0.5f;
-  float py = y + 0.5f;
+  float px = x + xMid;
+  float py = y + yMid;
   float w0 = 0, w1 = 0, w2 = 0, update = 0, z;
   float area = edgeFunc(v0, v1, v2);
   if (area != 0) {
@@ -105,10 +109,10 @@ void drawTriangle(glm::vec3& v0, glm::vec3& v1, glm::vec3& v2, Color color, int 
     for (int x = minX; x <= maxX; ++x) {
       pixelBuff currentPixel = insideTriangle(x, y, v0Pixel, v1Pixel, v2Pixel);
       if (currentPixel.draw) {
-        
+
         if (TEXTURE and LIGHTNING) {
           glm::vec3 bary = extractBarycentric(modelIdx, triIdx, x, y);
-          Color texColor = extractColor(modelIdx, triIdx, bary, persp_tex_z, zBuffer[y][x]);
+          Color texColor = extractColor(modelIdx, triIdx, bary, persp_tex_w, zBuffer[y][x]);
           glm::vec3 lightAmount = lightIntensity(modelIdx, triIdx, bary, WORLD_TO_SCREEN_INV);
           framebuffer[y][x][0] = std::min(static_cast<float>(texColor.r)*lightAmount.x, 255.0f);
           framebuffer[y][x][1] = std::min(static_cast<float>(texColor.g)*lightAmount.y, 255.0f);
@@ -117,7 +121,7 @@ void drawTriangle(glm::vec3& v0, glm::vec3& v1, glm::vec3& v2, Color color, int 
 
         else if (TEXTURE) {
           glm::vec3 bary = extractBarycentric(modelIdx, triIdx, x, y);
-          Color texColor = extractColor(modelIdx, triIdx, bary, persp_tex_z, zBuffer[y][x]);
+          Color texColor = extractColor(modelIdx, triIdx, bary, persp_tex_w, zBuffer[y][x]);
           framebuffer[y][x][0] = std::min(static_cast<float>(texColor.r), 255.0f);
           framebuffer[y][x][1] = std::min(static_cast<float>(texColor.g), 255.0f);
           framebuffer[y][x][2] = std::min(static_cast<float>(texColor.b), 255.0f);

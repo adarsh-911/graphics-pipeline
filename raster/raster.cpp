@@ -1,5 +1,4 @@
 #include <fstream>
-#include "../modelLoader/loadModels.hpp"
 #include "../vertexTransform/transform.hpp"
 #include "../clipping/clip.hpp"
 #include "../texturing/texturing.hpp"

@@ -49,7 +49,7 @@ int loadModels() {
           modelInst.position = {0.0f, -5.0f, 10.0f};
           modelInst.angle = glm::radians(90.0f);
           modelInst.axis = {1.0f, 0.0f, 0.0f};
-          modelInst.scaleFactor = 0.25;
+          modelInst.scaleFactor = 0.20;
           modelInst.color = {255, 255, 255};
 
           models.push_back(modelInst);
@@ -161,6 +161,26 @@ int loadModels() {
           modelInst.axis = {0.0f, 0.0f, 1.0f};
           modelInst.scaleFactor = 1.0;
           modelInst.color = {200, 124, 70};
+
+          //models.push_back(modelInst);
+        }
+        if (name == "interior") {
+          modelInst.light = false;
+          modelInst.position = {0.0f, 0.0f, 100.0f};
+          modelInst.angle = glm::radians(180.0f);
+          modelInst.axis = {0.0f, 0.0f, 1.0f};
+          modelInst.scaleFactor = 0.10;
+          modelInst.color = {200, 124, 70};
+
+          //models.push_back(modelInst);
+        }
+        if (name == "room") {
+          modelInst.light = false;
+          modelInst.position = {0.0f, 0.0f, 100.0f};
+          modelInst.angle = glm::radians(180.0f);
+          modelInst.axis = {0.0f, 0.0f, 1.0f};
+          modelInst.scaleFactor = 0.10;
+          modelInst.color = {201, 14, 70};
 
           //models.push_back(modelInst);
         }

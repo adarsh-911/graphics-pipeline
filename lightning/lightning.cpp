@@ -1,4 +1,3 @@
-#include "../modelLoader/loadModels.hpp"
 #include "../vertexTransform/transform.hpp"
 #include "lightning.hpp"
 
@@ -12,7 +11,7 @@ float constant = 1.0;
 float linear = 0.05;
 float quadratic = 0.005;
 
-float RANGE = 16.0f;
+float RANGE = 17.0f;
 
 glm::vec3 reflect (const glm::vec3& I, const glm::vec3& N) {
     return I - 2.0f * glm::dot(I, N) * N;

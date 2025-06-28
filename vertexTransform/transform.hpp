@@ -27,6 +27,7 @@ struct Plane {
 
 void generateWorld();
 void cameraInputs (Camera camera);
+void readModels();
 extern std::vector<modelBuff> worldSpace;
 extern std::vector<modelBuff> cameraSpace;
 extern std::vector<modelBuff> screenSpace;
@@ -37,3 +38,4 @@ extern Plane near, far;
 extern glm::mat4 WORLD_TO_SCREEN;
 extern glm::mat4 WORLD_TO_CAM;
 extern glm::mat4 CAM_TO_SCREEN;
+extern std::vector<Model> models;

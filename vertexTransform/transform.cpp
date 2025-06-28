@@ -2,8 +2,9 @@
 #include <algorithm>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "../modelLoader/loadModels.hpp"
 #include "transform.hpp"
+
+std::vector<Model> models;
 
 std::vector<modelBuff> worldSpace;
 std::vector<modelBuff> cameraSpace;
@@ -72,7 +73,7 @@ void generateModel (Model model) {
   for (const glm::vec3& vertex : model.getVertices()) {
     glm::vec4 scaled_vertex(vertex.x*model.scaleFactor, vertex.y*model.scaleFactor, vertex.z*model.scaleFactor, 1.0f);
     glm::vec4 transVertex = transformToWorld(scaled_vertex, model.position, model.angle, model.axis);
-    transformNormals(model);
+    //transformNormals(model);
     modelInst.vertices.push_back(transVertex);
     if (model.light) sum += glm::vec3(transVertex.x, transVertex.y, transVertex.z);
   }
@@ -137,5 +138,18 @@ void cameraInputs (Camera camera) {
 void generateWorld() {
   for (Model& model : models) {
     generateModel(model);
+  }
+}
+
+void readModels() {
+  std::ifstream in("models.bin", std::ios::binary);
+  if (!in) {
+    std::cerr << "File not opened!\n";
+  }
+  size_t size;
+  in.read(reinterpret_cast<char*>(&size), sizeof(size));
+  models.resize(size);
+  for (auto& model : models) {
+    model.deserialize(in);
   }
 }

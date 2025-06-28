@@ -1,6 +1,14 @@
-make
-./main $1 $2 $3 $4 $5 $6
-rm main
-python3 imageConvert.py
-rm output.ppm
-feh output.png
+if [ "$1" = "loadmodels" ]; then
+  make clean
+  make loadmodels
+  ./runLoadModels
+  rm ./runLoadModels
+  make
+else
+  make
+  ./main $1 $2 $3 $4 $5 $6
+  rm main
+  python3 imageConvert.py
+  rm output.ppm
+  feh output.png
+fi

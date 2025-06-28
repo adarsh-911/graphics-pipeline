@@ -1,5 +1,7 @@
 #include "texturing.hpp"
-#include "../modelLoader/loadModels.hpp"
+#include "../vertexTransform/transform.hpp"
+
+Color default_color = {20, 123, 67};
 
 Color bilinear_filtering (int w, int h, float u, float v, const std::vector<Color>& texels) {
   float tex_x = u * (w - 1);
@@ -41,6 +43,8 @@ Color uv_rounding(int w, int h, float u, float v, const std::vector<Color>& texe
 Color extractColor (int modelIdx, int triIdx, glm::vec3 barycentric, glm::vec3 persp_w, float z) {
   idx idx1 = (models[modelIdx]).getIndices(2)[triIdx];
   std::vector<glm::vec2> texCoords = (models[modelIdx]).getTexCoords();
+
+  if (texCoords.size() == 0) return default_color;
 
   int w =  models[modelIdx].texWidth[models[modelIdx].getTexID(triIdx)];
   int h = models[modelIdx].texHeight[models[modelIdx].getTexID(triIdx)];

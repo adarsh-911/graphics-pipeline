@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<comment version="3.0">
+  <caption>Dark blue product background</caption>
+  <note>Dark blue wall with wooden plank product background</note>
+  <place/>
+  <categories>
+    <category value="backdrop"/>
+    <category value="background"/>
+    <category value="blue"/>
+    <category value="brown"/>
+    <category value="copy space"/>
+    <category value="dark"/>
+    <category value="dark blue"/>
+    <category value="decor"/>
+    <category value="decorate"/>
+    <category value="decoration"/>
+    <category value="design space"/>
+    <category value="empty"/>
+    <category value="floor"/>
+    <category value="material"/>
+    <category value="natural"/>
+    <category value="navy"/>
+    <category value="navy blue"/>
+    <category value="pattern"/>
+    <category value="plain"/>
+    <category value="plank"/>
+    <category value="product backdrop"/>
+    <category value="product background"/>
+    <category value="rough"/>
+    <category value="space"/>
+    <category value="surface"/>
+    <category value="texture"/>
+    <category value="textured"/>
+    <category value="wall"/>
+    <category value="wallpaper"/>
+    <category value="wood"/>
+    <category value="wood textured"/>
+    <category value="wooden"/>
+    <category value="wooden textured"/>
+  </categories>
+</comment>

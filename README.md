@@ -1,7 +1,11 @@
 # Basic 3D Graphics Pipeline
 
 ## Build and Run
-Run the executable in this format
+To load the models
+```bash
+./run loadmodels
+```
+Then run the executable in this format
 ```bash
 ./run {position} {direction}
 ```

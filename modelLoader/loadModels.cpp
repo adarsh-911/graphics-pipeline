@@ -109,7 +109,7 @@ int loadModels() {
           modelInst.position = {0.0f, 0.0f, 1.07f};
           modelInst.angle = glm::radians(0.0f);
           modelInst.axis = {0.0f, 1.0f, 0.0f};
-          modelInst.scaleFactor = 7.0;
+          modelInst.scaleFactor = 5.0;
           modelInst.color = {15, 30, 50};
 
           models.push_back(modelInst);

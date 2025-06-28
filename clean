@@ -1,0 +1,4 @@
+rm models.bin
+make clean
+rm testloadModels.o
+rm modelLoader/loadModels.o
